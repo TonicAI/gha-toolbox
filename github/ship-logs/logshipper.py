@@ -223,8 +223,8 @@ def attach_run_metadata(run_metadata, log_fetch_config):
                     "status": run_metadata.get("status"),
                     "conclusion": run_metadata.get("conclusion"),
                 },
-                "pull_request_url": run_metadata.get("pull_requests").get("url"),
-                "pull_request_number": run_metadata.get("pull_requests").get("number"),
+                "pull_request_url": first_or_default(run_metadata.get("pull_requests"), {}).get("url", ""),
+                "pull_request_number": first_or_default(run_metadata.get("pull_requests"), {}).get("number", -1),
             }
         )
 
@@ -424,6 +424,7 @@ by_timestamp = op.itemgetter("@timestamp")
 with_timestamp = lambda l: "@timestamp" in l
 # some log records are also just empty too
 non_empty = lambda x: len(x["@msg"]) > 0
+first_or_default = lambda it, default: next(iter(it), default)
 
 
 def by_step_name(log_record) -> str:
