@@ -223,8 +223,8 @@ def attach_run_metadata(run_metadata, log_fetch_config):
                     "status": run_metadata.get("status"),
                     "conclusion": run_metadata.get("conclusion"),
                 },
-                "pull_request_url": run_metadata.get("pull_requests").get("url"),
-                "pull_request_number": run_metadata.get("pull_requests").get("number"),
+                "pull_request_url": run_metadata.get("pull_requests")[0].get("url") if run_metadata.get("pull_requests") else None,
+                "pull_request_number": run_metadata.get("pull_requests")[0].get("number") if run_metadata.get("pull_requests") else None,
             }
         )
 
