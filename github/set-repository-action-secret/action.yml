@@ -1,0 +1,28 @@
+name: Set repository action secret
+description: Set a secret in a repository
+inputs:
+  repo-token:
+      required: true
+      description: 'The access token needed to write a secret to the target repository'
+  secret-name:
+    description: Secret name
+    required: true
+  secret-value:
+    description: Secret value
+    required: true
+  repository:
+    description: Repository name
+    default: ${{ github.repository }}
+    required: false
+  owner:
+    description: Owner of the repository
+    default: ${{ github.repository_owner }}
+    required: false
+  token:
+    description: Repository access token
+    required: true
+
+runs:
+  using: 'node20'
+  main: 'index.js'
+
