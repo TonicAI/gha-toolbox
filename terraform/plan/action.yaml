@@ -1,0 +1,74 @@
+name: Terraform Plan
+description: Initializes terraform outputs a plan, generates artifact of plan file
+inputs:
+  working-directory:
+    required: true
+    description: Directory to execute terraform in
+  backend-config:
+    required: false
+    description: Path to backend configuration file
+  var-file:
+    required: false
+    description: Path to terraform variable file
+  plan-name:
+    required: true
+    description: Name of plan artifact
+  init-args:
+    required: false
+    description: Additional arguments to pass to terraform init
+  plan-args:
+    required: false
+    description: Additional arguments to pass to terraform plan
+runs:
+  using: composite
+  steps:
+    - name: Show Terraform Values
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        BACKEND_CONFIG: ${{ inputs.backend-config }}
+        VAR_FILE: ${{ inputs.var-file }}
+      shell: bash
+      run: |
+        #@begin=bash@
+        if [ ! -z "${BACKEND_CONFIG}" ]; then
+          echo "Backend Config"
+          cat "${BACKEND_CONFIG}"
+        fi
+
+        if [ ! -z "${VAR_FILE}" ]; then
+          echo "Var File"
+          cat "${VAR_FILE}"
+        fi
+        #@end=bash@
+    - name: Init
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        BACKEND_CONFIG: ${{ inputs.backend-config }}
+        INIT_ARGS: ${{ inputs.init-args }}
+      shell: bash
+      run: |
+        #@begin=bash@
+        if [ ! -z "${BACKEND_CONFIG}" ]; then
+          INIT_ARGS="${INIT_ARGS} --backend-config '${BACKEND_CONFIG}'"
+        fi
+        terraform init $INIT_ARGS -input=false
+        #@end=bash@
+    - name: Plan
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        PLAN_ARGS: ${{ inputs.plan-args }}
+        VAR_FILE: ${{ inputs.var-file }}
+      shell: bash
+      run: |
+        #@begin=bash@
+        if [ ! -z "${VAR_FILE}" ]; then
+          PLAN_ARGS="${PLAN_ARGS} --var-file '${VAR_FILE}'"
+        fi
+        terraform plan ${PLAN_ARGS} -out=plan -input=false
+        #@end=bash@
+    - name: Upload Plan
+      id: artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.plan-name }}
+        path: ${{ inputs.working-directory }}/plan
