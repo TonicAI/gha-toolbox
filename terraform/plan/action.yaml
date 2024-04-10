@@ -49,7 +49,7 @@ runs:
       run: |
         #@begin=bash@
         if [ ! -z "${BACKEND_CONFIG}" ]; then
-          INIT_ARGS="${INIT_ARGS} --backend-config='${BACKEND_CONFIG}'"
+          INIT_ARGS="${INIT_ARGS} --backend-config=${BACKEND_CONFIG}"
         fi
         terraform init $INIT_ARGS -input=false
         #@end=bash@
@@ -62,7 +62,7 @@ runs:
       run: |
         #@begin=bash@
         if [ ! -z "${VAR_FILE}" ]; then
-          PLAN_ARGS="${PLAN_ARGS} --var-file='${VAR_FILE}'"
+          PLAN_ARGS="${PLAN_ARGS} --var-file=${VAR_FILE}"
         fi
         terraform plan ${PLAN_ARGS} -out=plan -input=false
         #@end=bash@
