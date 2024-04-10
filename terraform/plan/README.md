@@ -31,7 +31,11 @@ jobs:
           # optional, pass additional init args
           init-args: -lock=false
           # optional, pass additional plan args
-          plan-args: -var 'foo=bar'
+          plan-args: -lock=false
+          # pass variables
+          tf-vars: |
+            foo=baz
+            qux=2
         env:
           # can pass terraform variables via envvars as well
           TF_VAR_baz: 'qux'
