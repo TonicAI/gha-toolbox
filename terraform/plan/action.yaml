@@ -67,7 +67,7 @@ runs:
         #@begin=bash@
         if [ ! -z "${TF_VARS}" ]; then
           while IFS= read -r line || [[ -n $line ]]; do
-            PLAN_ARGS="${PLAN_ARGS} -var=${line}"
+            PLAN_ARGS="${PLAN_ARGS} -var '${line}'"
           done < <(printf '%s' "${TF_VARS}")
         fi
 
