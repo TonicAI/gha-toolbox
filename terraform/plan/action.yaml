@@ -75,6 +75,7 @@ runs:
           PLAN_ARGS="${PLAN_ARGS} --var-file=${VAR_FILE}"
         fi
 
+        echo "PLAN ARGS: ${PLAN_ARGS}"
         terraform plan ${PLAN_ARGS} -out=plan -input=false
         #@end=bash@
     - name: Upload Plan
