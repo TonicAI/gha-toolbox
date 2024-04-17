@@ -19,7 +19,7 @@ runs:
       run: |
         echo "${CONTENT}" > "${FILEPATH}"
         ABSOLUTE_PATH=$(readlink -e "${FILEPATH}")
-        echo "path=${ABSOLUTE_PATH}" >> $GITUB_OUTPUT
+        echo "path=${ABSOLUTE_PATH}" >> $GITHUB_OUTPUT
       shell: bash
       env:
         CONTENT: ${{ inputs.content }}
