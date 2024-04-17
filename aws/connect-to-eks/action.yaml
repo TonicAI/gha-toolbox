@@ -1,0 +1,32 @@
+name: Connect to EKS
+description: Updates kubeconfig for an EKS cluster
+inputs:
+  cluster-name:
+    required: true
+    description: name of eks cluster
+  aws-region:
+    required: true
+    description: region where the eks cluster is located
+  kube-config:
+    required: false
+    description: Path to the kubeconfig file to update or create. The full path to the file is included in the outputs
+outputs:
+  kube-config:
+    value: ${{ steps.eks.outputs.kubeconfig }}
+    description: Absolute path to kubeconfig file
+
+runs:
+  using: composite
+  steps:
+    - id: eks
+      shell: bash
+      run: |
+        #@begin=bash@
+        KUBECONFIG=${KUBECONFIG:-".kubeconfig"}
+        aws eks update-kubeconfig --region "${AWS_REGION}" --name "${CLUSTER_NAME}"
+        echo "kubeconfig=$(realpath $KUBECONFIG)" >> $GITUB_OUTPUT
+        #@end=bash@
+      env:
+        KUBECONFIG: ${{ inputs.kube-config }}
+        AWS_REGION: ${{ inputs.aws-region }}
+        CLUSTER_NAME: ${{ inputs.cluster-name }}
