@@ -84,9 +84,11 @@ runs:
         echo "PLAN ARGS: ${PLAN_ARGS}"
         terraform plan ${PLAN_ARGS} -out="${PLAN_NAME}" -input=false
         #@end=bash@
-    - name: Upload Plan
+    - name: Artifact Terraform
       id: artifact
       uses: actions/upload-artifact@v4
       with:
         name: ${{ inputs.plan-name }}
-        path: ${{ inputs.working-directory }}/${{ inputs.plan-name }}
+        path: |
+          ${{ inputs.working-directory }}/${{ inputs.plan-name }}
+          ${{ inputs.working-directoty }}/.terraform
