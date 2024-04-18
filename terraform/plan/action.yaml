@@ -84,25 +84,17 @@ runs:
         echo "PLAN ARGS: ${PLAN_ARGS}"
         terraform plan ${PLAN_ARGS} -out="${PLAN_NAME}" -input=false
         #@end=bash@
-    - name: Archive .terraform
-      id: archive
-      shell: bash
-      working-directory: ${{ inputs.working-directory }}
-      run: |
-        tar -czf terraform.tar.gz .terraform
-    - name: Place artifacts
-      shell: bash
-      env:
-        ARTIFACT_DIR: ${{ inputs.working-directory }}
-        PLAN_NAME: ${{ inputs.plan-name }}
-      run: |
-        mv "${ARTIFACT_DIR}/terraform.tar.gz" terraform.tar.gz
-        mv "${ARTIFACT_DIR}/${PLAN_NAME}" "${PLAN_NAME}"
     - name: Artifact Plan
-      id: artifact
+      id: artifact-plan
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ inputs.plan-name }}
+        name: ${{ inputs.plan-name }}.tfplan
         path: |
-          ${{ inputs.plan-name }}
-          terraform.tar.gz
+          ${{ inputs.working-dir }}/${{ inputs.plan-name }}
+    - name: Artifact Terraform
+      id: artifact-terraform
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.plan-name }}.terraform
+        path: |
+          ${{ inputs.working-dir }}/.terraform/*
