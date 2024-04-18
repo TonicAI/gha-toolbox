@@ -71,7 +71,7 @@ runs:
       uses: actions/upload-artifact@v4
       with:
         name: ${{ inputs.plan-name }}.tfplan
-        path: ${{ inputs.working-directory }}/${{ inputs.plan-name }}
+        path: ${{ inputs.working-directory }}/${{ inputs.plan-name }}.tfplan
     - name: Artifact workdir
       id: terraform
       uses: actions/upload-artifact@v4
