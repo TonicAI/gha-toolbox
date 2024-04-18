@@ -74,7 +74,7 @@ runs:
         path: ${{ inputs.working-directory }}/${{ inputs.plan-name }}.tfplan
     - name: Tarchive workdir
       env:
-        WORKDIR: ${{ inputs.workdir }}
+        WORKDIR: ${{ inputs.working-directory }}
       shell: bash
       run: tar -cvf workdir.tar.gz "${WORKDIR}"
     - name: Artifact workdir
