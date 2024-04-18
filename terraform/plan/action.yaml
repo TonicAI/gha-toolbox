@@ -62,6 +62,7 @@ runs:
         PLAN_ARGS: ${{ inputs.plan-args }}
         VAR_FILE: ${{ inputs.var-file }}
         TF_VARS: ${{ inputs.tf-vars }}
+        PLAN_NAME: ${{ inputs.plan-name }}
       shell: bash
       run: |
         #@begin=bash@
@@ -81,11 +82,11 @@ runs:
         fi
 
         echo "PLAN ARGS: ${PLAN_ARGS}"
-        terraform plan ${PLAN_ARGS} -out=plan -input=false
+        terraform plan ${PLAN_ARGS} -out="${PLAN_NAME}" -input=false
         #@end=bash@
     - name: Upload Plan
       id: artifact
       uses: actions/upload-artifact@v4
       with:
         name: ${{ inputs.plan-name }}
-        path: ${{ inputs.working-directory }}/plan
+        path: ${{ inputs.working-directory }}/${{ inputs.plan-name }}
