@@ -25,24 +25,6 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Show Terraform Values
-      working-directory: ${{ inputs.working-directory }}
-      env:
-        BACKEND_CONFIG: ${{ inputs.backend-config }}
-        VAR_FILE: ${{ inputs.var-file }}
-      shell: bash
-      run: |
-        #@begin=bash@
-        if [ ! -z "${BACKEND_CONFIG}" ]; then
-          echo "Backend Config"
-          cat "${BACKEND_CONFIG}"
-        fi
-
-        if [ ! -z "${VAR_FILE}" ]; then
-          echo "Var File"
-          cat "${VAR_FILE}"
-        fi
-        #@end=bash@
     - name: Init
       working-directory: ${{ inputs.working-directory }}
       env:
@@ -84,17 +66,9 @@ runs:
         echo "PLAN ARGS: ${PLAN_ARGS}"
         terraform plan ${PLAN_ARGS} -out="${PLAN_NAME}" -input=false
         #@end=bash@
-    - name: Artifact Plan
-      id: artifact-plan
+    - name: Upload Plan
+      id: artifact
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ inputs.plan-name }}.tfplan
-        path: |
-          ${{ inputs.working-dir }}/${{ inputs.plan-name }}
-    - name: Artifact Terraform
-      id: artifact-terraform
-      uses: actions/upload-artifact@v4
-      with:
-        name: ${{ inputs.plan-name }}.terraform
-        path: |
-          ${{ inputs.working-dir }}/.terraform/*
+        name: ${{ inputs.plan-name }}
+        path: ${{ inputs.working-directory }}/${{ inputs.plan-name }}
