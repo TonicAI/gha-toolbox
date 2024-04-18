@@ -64,7 +64,7 @@ runs:
         fi
 
         echo "PLAN ARGS: ${PLAN_ARGS}"
-        terraform plan ${PLAN_ARGS} -out="${PLAN_NAME}" -input=false
+        terraform plan ${PLAN_ARGS} -out="${PLAN_NAME}.tfplan" -input=false
         #@end=bash@
     - name: Artifact plan
       id: plan
