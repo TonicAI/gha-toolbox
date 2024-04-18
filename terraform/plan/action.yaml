@@ -90,11 +90,19 @@ runs:
       working-directory: ${{ inputs.working-directory }}
       run: |
         tar -czf terraform.tar.gz .terraform
-    - name: Artifact Terraform
+    - name: Place artifacts
+      shell: bash
+      env:
+        ARTIFACT_DIR: ${{ inputs.working-directory }}
+        PLAN_NAME: ${{ inputs.plan-name }}
+      run: |
+        mv "${ARTIFACT_DIR}/terraform.tar.gz" terraform.tar.gz
+        mv "${ARTIFACT_DIR}/${PLAN_NAME}" "${PLAN_NAME}"
+    - name: Artifact Plan
       id: artifact
       uses: actions/upload-artifact@v4
       with:
         name: ${{ inputs.plan-name }}
         path: |
-          ${{ inputs.working-directory }}/${{ inputs.plan-name }}
-          ${{ inputs.working-directoty }}/terraform.tar.gz
+          ${{ inputs.plan-name }}
+          terraform.tar.gz
