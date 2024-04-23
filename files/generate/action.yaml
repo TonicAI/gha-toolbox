@@ -1,0 +1,26 @@
+name: Generate file
+description: Writes a file with the given content
+inputs:
+  content:
+    required: true
+    description: content of file
+  filepath:
+    required: true
+    description: filepath to write to
+outputs:
+  path:
+    description: Absolute path to the generated file
+    value: ${{ steps.generate.outputs.path }}
+runs:
+  using: "composite"
+  steps:
+    - name: Generate file
+      id: generate
+      run: |
+        echo "${CONTENT}" > "${FILEPATH}"
+        ABSOLUTE_PATH=$(readlink -e "${FILEPATH}")
+        echo "path=${ABSOLUTE_PATH}" >> $GITHUB_OUTPUT
+      shell: bash
+      env:
+        CONTENT: ${{ inputs.content }}
+        FILEPATH: ${{ inputs.filepath }}

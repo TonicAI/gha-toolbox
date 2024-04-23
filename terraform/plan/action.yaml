@@ -1,0 +1,85 @@
+name: Terraform Plan
+description: Initializes terraform outputs a plan, generates artifact of plan file
+inputs:
+  working-directory:
+    required: true
+    description: Directory to execute terraform in
+  backend-config:
+    required: false
+    description: Path to backend configuration file
+  var-file:
+    required: false
+    description: Path to terraform variable file
+  plan-name:
+    required: true
+    description: Name of plan artifact
+  init-args:
+    required: false
+    description: Additional arguments to pass to terraform init
+  plan-args:
+    required: false
+    description: Additional arguments to pass to terraform plan
+  tf-vars:
+    required: false
+    description: line separated key=value pairs to pass as terraform variables
+runs:
+  using: composite
+  steps:
+    - name: Init
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        BACKEND_CONFIG: ${{ inputs.backend-config }}
+        INIT_ARGS: ${{ inputs.init-args }}
+      shell: bash
+      run: |
+        #@begin=bash@
+        if [ ! -z "${BACKEND_CONFIG}" ]; then
+          INIT_ARGS="${INIT_ARGS} --backend-config=${BACKEND_CONFIG}"
+        fi
+        terraform init $INIT_ARGS -input=false
+        #@end=bash@
+    - name: Plan
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        PLAN_ARGS: ${{ inputs.plan-args }}
+        VAR_FILE: ${{ inputs.var-file }}
+        TF_VARS: ${{ inputs.tf-vars }}
+        PLAN_NAME: ${{ inputs.plan-name }}
+      shell: bash
+      run: |
+        #@begin=bash@
+        #fragile, be careful
+        COMMENT_PATTERN="^ *#"
+        if [ ! -z "${TF_VARS}" ]; then
+          while IFS= read -r line || [[ -n $line ]]; do
+            if [ -z "${line}" ] || [[ $line =~ $COMMENT_PATTERN ]]; then
+              continue
+            fi
+            PLAN_ARGS="${PLAN_ARGS} -var ${line}"
+          done < <(printf '%s' "${TF_VARS}")
+        fi
+
+        if [ ! -z "${VAR_FILE}" ]; then
+          PLAN_ARGS="${PLAN_ARGS} --var-file=${VAR_FILE}"
+        fi
+
+        echo "PLAN ARGS: ${PLAN_ARGS}"
+        terraform plan ${PLAN_ARGS} -out="${PLAN_NAME}.tfplan" -input=false
+        #@end=bash@
+    - name: Artifact plan
+      id: plan
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.plan-name }}.tfplan
+        path: ${{ inputs.working-directory }}/${{ inputs.plan-name }}.tfplan
+    - name: Tarchive workdir
+      env:
+        WORKDIR: ${{ inputs.working-directory }}
+      shell: bash
+      run: tar -cvf workdir.tar.gz "${WORKDIR}"
+    - name: Artifact workdir
+      id: terraform
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.plan-name }}.tfworkdir
+        path: workdir.tar.gz

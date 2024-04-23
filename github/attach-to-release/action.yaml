@@ -1,0 +1,33 @@
+name: "Attach to release"
+description: Attaches one or more files to a release
+inputs:
+  release-tag:
+    required: true
+    description: Tag for release
+  repository:
+    required: false
+    description: org/repo that the release is in, default is github.repository
+  gh-token:
+    required: false
+    description: Github token to use, default is github.token
+  clobber:
+    required: false
+    default: "false"
+    description: Set to true to allow overwriting of assets with the same name
+  attachments:
+    required: true
+    description: Space separated list of attachments. See github release upload for details
+
+
+runs:
+  using: "composite"
+  steps:
+    - shell: bash
+      run: |
+        gh -R "${REPOSITORY}" release upload "${TAG}" ${ARGS} ${ARTIFACTS}
+      env:
+        TAG: ${{ inputs.release-tag }}
+        REPOSITORY: ${{ inputs.repository || github.repository }}
+        ARTIFACTS: ${{ inputs.attachments }}
+        ARGS: ${{ inputs.clobber == 'true' && '--clobber' || '' }}
+        GH_TOKEN: ${{ inputs.gh-token || github.token }}
