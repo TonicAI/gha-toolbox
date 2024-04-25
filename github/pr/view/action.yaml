@@ -1,0 +1,109 @@
+name: "PR Details"
+description: |
+  Retrieves PR information using GH CLI. It provides the raw JSON
+  and some default fields as outputs. The JSON blob has JSON strings; however
+  the other outputs are bash string
+inputs:
+  repository:
+    required: false
+    description: owner/repo the PR is located in, default is github.repository
+  pr-ref:
+    description: Can be branch name, PR number or its URL
+    required: true
+  fields:
+    description: |
+      Comma seprated fields to include in JSON response,
+      "number,state,labels,body,isDraft,headRefName,url" are already included
+      and additionally provided as outputs to this job
+    required: false
+  gh-token:
+    description: Github token to use, default is github.token
+    required: false
+outputs:
+  number:
+    description: Number assigned to pull request in the repository
+    value: ${{ steps.pr.outputs.number }}
+  branch-name:
+    description: Branch name for the pull request
+    value: ${{ steps.pr.outputs.branch-name }}
+  url:
+    description: URL for the pull request
+    value: ${{ steps.pr.outputs.url }}
+  state:
+    description: State of the pull request, i.e. OPEN
+    value: ${{ steps.pr.outputs.state }}
+  labels:
+    description: New line separated collection of labels applied to PR
+    value: ${{ steps.pr.outputs.labels }}
+  labels-json:
+    description: JSON formatted list of label names applied to PR
+    value: ${{ steps.pr.outputs.labels-json }}
+  body:
+    description: Body of the pull request
+    value: ${{ steps.pr.outputs.body }}
+  draft:
+    description: True if the PR is a draft, other False
+    value: ${{ steps.pr.outputs.draft }}
+  json:
+    description: Full JSON body returned from the gh CLI
+    value: ${{ steps.pr.outputs.json }}
+  pr_number:
+    description: Compability field, deprecated
+    value: ${{ steps.pr.outputs.number }}
+  pr_description:
+    description: Compability field, deprecated
+    value: ${{ steps.pr.outputs.body }}
+  pr_state:
+    description: Compability field, deprecated
+    value: ${{ steps.pr.outputs.state }}
+runs:
+  using: "composite"
+  steps:
+    - id: pr
+      shell: bash
+      env:
+        REPOSITORY: ${{ inputs.repository || github.repository }}
+        PR_REF: ${{ inputs.pr-ref }}
+        GH_TOKEN: ${{ inputs.gh-token || github.token }}
+        ALSO_FIELDS: ${{ inputs.fields }}
+      run: |
+        #@begin=bash@
+        FIELDS="number,state,labels,body,isDraft,changedFiles,id,headRefName,url"
+        # gh pr view --json doesn't like trailing ,
+        if [ ! -z "${ALSO_FIELDS}" ]; then
+            FIELDS="${FIELDS},${ALSO_FIELDS}"
+        fi
+        echo "Requesting ${FIELDS}"
+        JSON=$(gh -R "${REPOSITORY}" pr view "${PR_REF}" --json "${FIELDS}")
+
+        function field() {
+          local SRC="${1}"
+          local EXPR="${2}"
+          echo "${SRC}" | jq -crM "${EXPR}"
+        }
+
+        function output() {
+          local OUTPUT_NAME="${1}"
+          local JQ_EXPR="${2}"
+          local VALUE="$(field "$JSON" "$JQ_EXPR")"
+          local CMD="${OUTPUT_NAME}=${VALUE}"
+          echo "Setting ${OUTPUT_NAME} from expression '${JQ_EXPR}'"
+          echo "${CMD}" >> $GITHUB_OUTPUT
+        }
+
+        output "json" "."
+        output "number" ".number"
+        output "branch-name" ".headRefName"
+        output "url" ".url"
+        output "state" ".state"
+        output "draft" ".isDraft"
+        output "labels" ".labels[] | .name"
+        output "labels-json" ".labels | map(.name)"
+
+        # body has literal newlines because of -r so we need to use HEREDOC
+        # instead; the json blob itself has the body with \n instead
+        EOV=$(uuidgen)
+        echo "body<<${EOV}" >> $GITHUB_OUTPUT
+        field "$JSON" ".body" >> $GITHUB_OUTPUT
+        echo "${EOV}" >> $GITHUB_OUTPUT
+        #@end=bash@
