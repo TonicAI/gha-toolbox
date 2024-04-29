@@ -87,4 +87,4 @@ jobs:
           repository: ${{ inputs.repository || github.repository }}
           pr-ref: ${{ inputs.pr-ref }}
           gh-token: ${{ secrets.GH_TOKEN || github.token }}
-          fields: ${{ inputs.include }}
+          include: ${{ inputs.include }}
