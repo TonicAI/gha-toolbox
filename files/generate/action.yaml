@@ -7,20 +7,13 @@ inputs:
   filepath:
     required: true
     description: filepath to write to
+  cleanup:
+    required: false
+    description: "Set to true to remove file at workflow end"
 outputs:
   path:
     description: Absolute path to the generated file
-    value: ${{ steps.generate.outputs.path }}
 runs:
-  using: "composite"
-  steps:
-    - name: Generate file
-      id: generate
-      run: |
-        echo "${CONTENT}" > "${FILEPATH}"
-        ABSOLUTE_PATH=$(readlink -e "${FILEPATH}")
-        echo "path=${ABSOLUTE_PATH}" >> $GITHUB_OUTPUT
-      shell: bash
-      env:
-        CONTENT: ${{ inputs.content }}
-        FILEPATH: ${{ inputs.filepath }}
+  using: "node20"
+  main: main.js
+  post: main.js
