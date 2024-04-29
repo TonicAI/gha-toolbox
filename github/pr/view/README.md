@@ -32,8 +32,7 @@ jobs:
         uses: tonicai/gha-toolbox/github/pr/view@main
         with:
           pr-ref: ${{ github.event.number }}
-          # additionally include this field in the response
-          fields: milestone
+          include: milestone
      - id: get-milestone
        env:
          PR_JSON: ${{ steps.pr.outputs.json }}

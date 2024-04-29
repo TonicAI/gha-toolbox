@@ -10,7 +10,7 @@ inputs:
   pr-ref:
     description: Can be branch name, PR number or its URL
     required: true
-  fields:
+  include:
     description: |
       Comma seprated fields to include in JSON response,
       "number,state,labels,body,isDraft,headRefName,url" are already included
@@ -65,13 +65,13 @@ runs:
         REPOSITORY: ${{ inputs.repository || github.repository }}
         PR_REF: ${{ inputs.pr-ref }}
         GH_TOKEN: ${{ inputs.gh-token || github.token }}
-        ALSO_FIELDS: ${{ inputs.fields }}
+        INCLUDE_FIELDS: ${{ inputs.include }}
       run: |
         #@begin=bash@
         FIELDS="number,state,labels,body,isDraft,changedFiles,id,headRefName,url"
         # gh pr view --json doesn't like trailing ,
-        if [ ! -z "${ALSO_FIELDS}" ]; then
-            FIELDS="${FIELDS},${ALSO_FIELDS}"
+        if [ ! -z "${INCLUDE_FIELDS}" ]; then
+            FIELDS="${FIELDS},${INCLUDE_FIELDS}"
         fi
         echo "Requesting ${FIELDS}"
         JSON=$(gh -R "${REPOSITORY}" pr view "${PR_REF}" --json "${FIELDS}")

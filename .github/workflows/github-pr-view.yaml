@@ -12,7 +12,7 @@ on:
         description: Can be branch name, PR number or its URL
         required: true
         type: string
-      fields:
+      include:
         description: |
           Comma seprated fields to include in JSON response,
           "number,state,labels,body,isDraft,headRefName,url" are already
@@ -87,4 +87,4 @@ jobs:
           repository: ${{ inputs.repository || github.repository }}
           pr-ref: ${{ inputs.pr-ref }}
           gh-token: ${{ secrets.GH_TOKEN || github.token }}
-          fields: ${{ inputs.fields }}
+          fields: ${{ inputs.include }}
