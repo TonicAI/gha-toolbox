@@ -1,0 +1,90 @@
+name: Get Pull Request Information
+
+on:
+  workflow_call:
+    inputs:
+      repository:
+        required: false
+        description: |
+          owner/repo the PR is located in, default is github.repository
+        type: string
+      pr-ref:
+        description: Can be branch name, PR number or its URL
+        required: true
+        type: string
+      include:
+        description: |
+          Comma seprated fields to include in JSON response,
+          "number,state,labels,body,isDraft,headRefName,url" are already
+          included and additionally provided as outputs to this job
+        required: false
+        type: string
+    secrets:
+      GH_TOKEN:
+        description: Github token to use, default is github.token
+        required: false
+    outputs:
+      number:
+        description: Number assigned to pull request in the repository
+        value: ${{ jobs.pr.outputs.number }}
+      branch-name:
+        description: Branch name for the pull request
+        value: ${{ jobs.pr.outputs.branch-name }}
+      url:
+        description: URL for the pull request
+        value: ${{ jobs.pr.outputs.url }}
+      state:
+        description: State of the pull request, i.e. OPEN
+        value: ${{ jobs.pr.outputs.state }}
+      labels:
+        description: New line separated collection of labels applied to PR
+        value: ${{ jobs.pr.outputs.labels }}
+      labels-json:
+        description: JSON formatted list of label names applied to PR
+        value: ${{ jobs.pr.outputs.labels-json }}
+      body:
+        description: Body of the pull request
+        value: ${{ jobs.pr.outputs.body }}
+      draft:
+        description: True if the PR is a draft, other False
+        value: ${{ jobs.pr.outputs.draft }}
+      json:
+        description: Full JSON body returned from the gh CLI
+        value: ${{ jobs.pr.outputs.json }}
+      pr_number:
+        description: Compability field, deprecated
+        value: ${{ jobs.pr.outputs.pr_number }}
+      pr_description:
+        description: Compability field, deprecated
+        value: ${{ jobs.pr.outputs.pr_description }}
+      pr_state:
+        description: Compability field, deprecated
+        value: ${{ jobs.pr.outputs.pr_state }}
+
+jobs:
+  pr:
+    name: Get Pull Request Info
+    runs-on: ubuntu-22.04
+    outputs:
+      number: ${{ steps.pr.outputs.number }}
+      branch-name: ${{ steps.pr.outputs.branch-name }}
+      url: ${{ steps.pr.outputs.url }}
+      state: ${{ steps.pr.outputs.state }}
+      labels: ${{ steps.pr.outputs.labels }}
+      labels-json: ${{ steps.pr.outputs.labels-json }}
+      body: ${{ steps.pr.outputs.body }}
+      draft: ${{ steps.pr.outputs.draft }}
+      json: ${{ steps.pr.outputs.json }}
+      pr_number: ${{ steps.pr.outputs.number }}
+      pr_description: ${{ steps.pr.outputs.body }}
+      pr_state: ${{ steps.pr.outputs.state }}
+    steps:
+      - id: pr
+        # we're probably being called from a different repository
+        # so we need to provide the full reference to this action
+        uses: tonicai/gha-toolbox/github/pr/view@main
+        with:
+          repository: ${{ inputs.repository || github.repository }}
+          pr-ref: ${{ inputs.pr-ref }}
+          gh-token: ${{ secrets.GH_TOKEN || github.token }}
+          fields: ${{ inputs.include }}
