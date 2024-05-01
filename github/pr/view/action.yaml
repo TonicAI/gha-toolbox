@@ -87,13 +87,17 @@ runs:
           local OUTPUT_NAME="${1}"
           local JQ_EXPR="${2}"
           local VALUE="$(field "$JSON" "$JQ_EXPR")"
-          local CMD="${OUTPUT_NAME}=${VALUE}"
           echo "Setting ${OUTPUT_NAME} from expression '${JQ_EXPR}'"
           if [ ! -z "${DEBUG}" ]; then
             echo "::group::${OUTPUT_NAME} value"
             echo "${VALUE}"
             echo "::endgroup::"
-          echo "${CMD}" >> $GITHUB_OUTPUT
+          fi
+
+          EOV=$(uuidgen)
+          echo "${OUTPUT_NAME}<<${EOV}" >> $GITHUB_OUTPUT
+          echo "${VALUE}" >> $GITHUB_OUTPUT
+          echo "${EOV}" >> $GITHUB_OUTPUT
         }
 
         output "json" "."
@@ -104,11 +108,5 @@ runs:
         output "draft" ".isDraft"
         output "labels" ".labels[] | .name"
         output "labels-json" ".labels | map(.name)"
-
-        # body has literal newlines because of -r so we need to use HEREDOC
-        # instead; the json blob itself has the body with \n instead
-        EOV=$(uuidgen)
-        echo "body<<${EOV}" >> $GITHUB_OUTPUT
-        field "$JSON" ".body" >> $GITHUB_OUTPUT
-        echo "${EOV}" >> $GITHUB_OUTPUT
+        output "body" ".body"
         #@end=bash@
