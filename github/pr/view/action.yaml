@@ -66,6 +66,7 @@ runs:
         PR_REF: ${{ inputs.pr-ref }}
         GH_TOKEN: ${{ inputs.gh-token || github.token }}
         INCLUDE_FIELDS: ${{ inputs.include }}
+        DEBUG: "1"
       run: |
         #@begin=bash@
         FIELDS="number,state,labels,body,isDraft,changedFiles,id,headRefName,url"
@@ -88,6 +89,10 @@ runs:
           local VALUE="$(field "$JSON" "$JQ_EXPR")"
           local CMD="${OUTPUT_NAME}=${VALUE}"
           echo "Setting ${OUTPUT_NAME} from expression '${JQ_EXPR}'"
+          if [ ! -z "${DEBUG}" ]; then
+            echo "::group::${OUTPUT_NAME} value"
+            echo "${VALUE}"
+            echo "::endgroup::"
           echo "${CMD}" >> $GITHUB_OUTPUT
         }
 
