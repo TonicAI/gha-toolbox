@@ -76,7 +76,7 @@ runs:
       env:
         WORKDIR: ${{ inputs.working-directory }}
       shell: bash
-      run: tar -cvf workdir.tar.gz "${WORKDIR}"
+      run: tar -czvf workdir.tar.gz "${WORKDIR}"
     - name: Artifact workdir
       id: terraform
       uses: actions/upload-artifact@v4
