@@ -82,7 +82,7 @@ jobs:
       - id: pr
         # we're probably being called from a different repository
         # so we need to provide the full reference to this action
-        uses: tonicai/gha-toolbox/github/pr/view@gh-cli-pr-info-2
+        uses: tonicai/gha-toolbox/github/pr/view@anr/gh-cli-pr-info-2
         with:
           repository: ${{ inputs.repository || github.repository }}
           pr-ref: ${{ inputs.pr-ref }}
