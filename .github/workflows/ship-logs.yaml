@@ -1,0 +1,83 @@
+name: Ship Logs
+on:
+  workflow_call:
+    inputs:
+      org:
+        type: string
+        required: false
+      repo:
+        type: string
+        required: false
+      run-id:
+        type: string
+        required: true
+        description: Run logs to download
+      log-index:
+        type: string
+        required: false
+        description: Log index to ship to
+        default: "github-action-logs"
+      opensearch-host:
+        required: true
+        type: string
+      opensearch-user:
+        required: true
+        type: string
+      github-token:
+        required: false
+        type: string
+        default: ${{ github.token }}
+      timeout-minutes:
+        required: false
+        type: number
+        default: 15
+        description: maximum time log shipping should run for
+    secrets:
+      OPENVPN_CONFIG:
+        required: true
+      DEV_PEM:
+        required: true
+      OPENSEARCH_PASSWORD:
+        required: true
+jobs:
+  ship_logs:
+    runs-on: ubuntu-22.04
+    name: Ship Logs
+    timeout-minutes: ${{ inputs.timout-minutes }}
+    steps:
+      - id: target-repo
+        env:
+          REPO: ${{ inputs.repo }}
+          ORG: ${{ inputs.org }}
+          # owner/repo
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          #@begin=bash@
+          if [ -z "${REPO}" ]; then
+            REPO="${GH_REPO#*/}"
+          fi
+
+          if [ -z "${ORG}" ]; then
+            ORG="${GH_REPO%/*}"
+          fi
+
+          echo "org=${ORG}" >> $GITHUB_OUTPUT
+          echo "repo=${REPO}" >> $GITHUB_OUTPUT
+          #@end=bash@
+      - name: Connect To VPN
+        uses: tonicai/gha-toolbox/runner/vpn@main
+        with:
+          vpn_config: ${{ secrets.OPENVPN_CONFIG }}
+          dev_pem: ${{ secrets.DEV_PEM }}
+      - name: Ship GitHub Action workflows logs to kibana
+        uses: tonicai/gha-toolbox/github/ship-logs@main
+        with:
+          github_token: ${{ inputs.github-token }}
+          github_org: ${{ steps.target-repo.outputs.org }}
+          github_repository: ${{ steps.target-repo.outputs.repo }}
+          github_run_id: ${{ inputs.run-id }}
+          opensearch_host: ${{ inputs.opensearch-host }}
+          opensearch_index: ${{ inputs.log-index }}
+          opensearch_user: ${{ inputs.opensearch-user }}
+          opensearch_password: ${{ secrets.OPENSEARCH_PASSWORD }}
