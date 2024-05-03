@@ -27,8 +27,6 @@ on:
         default: 15
         description: maximum time log shipping should run for
     secrets:
-      GITHUB_TOKEN:
-        required: true
       OPENVPN_CONFIG:
         required: true
       DEV_PEM:
