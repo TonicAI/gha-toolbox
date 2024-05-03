@@ -43,7 +43,7 @@ jobs:
   ship_logs:
     runs-on: ubuntu-22.04
     name: Ship Logs
-    timeout-minutes: ${{ inputs.timout-minutes }}
+    timeout-minutes: ${{ inputs.timeout-minutes }}
     steps:
       - id: target-repo
         env:
