@@ -2,12 +2,10 @@ name: Ship Logs
 on:
   workflow_call:
     inputs:
-      org:
+      repository:
         type: string
         required: false
-      repo:
-        type: string
-        required: false
+        default: ${{ github.repository }}
       run-id:
         type: string
         required: true
@@ -47,21 +45,12 @@ jobs:
     steps:
       - id: target-repo
         env:
-          REPO: ${{ inputs.repo }}
-          ORG: ${{ inputs.org }}
-          # owner/repo
-          GH_REPO: ${{ github.repository }}
+          REPOSITORY: ${{ inputs.repository }}
         shell: bash
         run: |
           #@begin=bash@
-          if [ -z "${REPO}" ]; then
-            REPO="${GH_REPO#*/}"
-          fi
-
-          if [ -z "${ORG}" ]; then
-            ORG="${GH_REPO%/*}"
-          fi
-
+          REPO="${GH_REPO#*/}"
+          ORG="${GH_REPO%/*}"
           echo "org=${ORG}" >> $GITHUB_OUTPUT
           echo "repo=${REPO}" >> $GITHUB_OUTPUT
           #@end=bash@
