@@ -49,18 +49,16 @@ jobs:
         shell: bash
         run: |
           #@begin=bash@
-          REPO="${GH_REPO#*/}"
-          ORG="${GH_REPO%/*}"
-          echo "org=${ORG}" >> $GITHUB_OUTPUT
-          echo "repo=${REPO}" >> $GITHUB_OUTPUT
+          PARTS=(${GH_REPO//\// })
+          set -x
+          echo "org=${PARTS[0]}" >> $GITHUB_OUTPUT
+          echo "repo=${PARTS[1]}" >> $GITHUB_OUTPUT
           #@end=bash@
-      - name: Connect To VPN
-        uses: tonicai/gha-toolbox/runner/vpn@main
+      - uses: tonicai/gha-toolbox/runner/vpn@main
         with:
           vpn_config: ${{ secrets.OPENVPN_CONFIG }}
           dev_pem: ${{ secrets.DEV_PEM }}
-      - name: Ship GitHub Action workflows logs to kibana
-        uses: tonicai/gha-toolbox/github/ship-logs@main
+      - uses: tonicai/gha-toolbox/github/ship-logs@main
         with:
           github_token: ${{ inputs.github-token }}
           github_org: ${{ steps.target-repo.outputs.org }}
