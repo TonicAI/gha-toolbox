@@ -1,0 +1,22 @@
+name: "Connect To VPN"
+description: "Connects to the Tonic VPN"
+inputs:
+  vpn_config:
+    required: true
+    description: "The contents of your ovpn file"
+  dev_pem:
+    required: true
+    description: "The contents of the dev.pem ssh key"
+  ping_target:
+    required: false
+    description: An IP to ping to verify VPN connection is alive
+    default: 172.26.3.201
+  dns_servers:
+    required: false
+    description: Space separated list of DNS servers for the runner to use
+    default: 192.168.0.2
+
+runs:
+  using: "node20"
+  main: index.js
+  post: index.js
