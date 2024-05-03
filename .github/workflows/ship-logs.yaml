@@ -49,8 +49,8 @@ jobs:
         shell: bash
         run: |
           #@begin=bash@
-          PARTS=(${GH_REPO//\// })
           set -x
+          PARTS=(${REPOSITORY//\// })
           echo "org=${PARTS[0]}" >> $GITHUB_OUTPUT
           echo "repo=${PARTS[1]}" >> $GITHUB_OUTPUT
           #@end=bash@
