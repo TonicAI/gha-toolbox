@@ -21,16 +21,14 @@ on:
       opensearch-user:
         required: true
         type: string
-      github-token:
-        required: false
-        type: string
-        default: ${{ github.token }}
       timeout-minutes:
         required: false
         type: number
         default: 15
         description: maximum time log shipping should run for
     secrets:
+      GITHUB_TOKEN:
+        required: true
       OPENVPN_CONFIG:
         required: true
       DEV_PEM:
@@ -60,7 +58,7 @@ jobs:
           dev_pem: ${{ secrets.DEV_PEM }}
       - uses: tonicai/gha-toolbox/github/ship-logs@main
         with:
-          github_token: ${{ inputs.github-token }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           github_org: ${{ steps.target-repo.outputs.org }}
           github_repository: ${{ steps.target-repo.outputs.repo }}
           github_run_id: ${{ inputs.run-id }}
