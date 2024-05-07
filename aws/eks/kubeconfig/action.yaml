@@ -1,4 +1,4 @@
-name: Connect to EKS
+name: Add EKS to kubeconfig
 description: Updates kubeconfig for an EKS cluster
 inputs:
   cluster-name:
@@ -7,6 +7,12 @@ inputs:
   aws-region:
     required: true
     description: region where the eks cluster is located
+  aws-access-key:
+    required: false
+    description: AWS access to use
+  aws-secret-key:
+    required: false
+    description: AWS secret key to use
   kube-config:
     required: false
     description: Path to the kubeconfig file to update or create. The full path to the file is included in the outputs
@@ -24,9 +30,11 @@ runs:
         #@begin=bash@
         KUBECONFIG=${KUBECONFIG:-".kubeconfig"}
         aws eks update-kubeconfig --region "${AWS_REGION}" --name "${CLUSTER_NAME}"
-        echo "kubeconfig=$(realpath $KUBECONFIG)" >> $GITUB_OUTPUT
+        echo "kubeconfig=$(readlink -e $KUBECONFIG)" >> $GITUB_OUTPUT
         #@end=bash@
       env:
         KUBECONFIG: ${{ inputs.kube-config }}
-        AWS_REGION: ${{ inputs.aws-region }}
         CLUSTER_NAME: ${{ inputs.cluster-name }}
+        AWS_REGION: ${{ inputs.aws-region }}
+        AWS_ACCESS_KEY: ${{ inputs.aws-access-key }}
+        AWS_SECRET_ACCESS_KEY: ${{ inputs.aws-secret-key }}
