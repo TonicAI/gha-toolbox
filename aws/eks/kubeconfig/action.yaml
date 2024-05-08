@@ -24,7 +24,7 @@ runs:
         #@begin=bash@
         KUBECONFIG=${KUBECONFIG:-".kubeconfig"}
         aws eks update-kubeconfig --region "${AWS_REGION}" --name "${CLUSTER_NAME}"
-        echo "kubeconfig=$(readlink -e $KUBECONFIG)" >> $GITUB_OUTPUT
+        echo "kubeconfig=$(readlink -e $KUBECONFIG)" >> $GITHUB_OUTPUT
         if [ ! -z "${DEBUG}" ]; then
           cat "${KUBECONFIG}"
         fi
