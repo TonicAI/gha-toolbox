@@ -7,12 +7,6 @@ inputs:
   aws-region:
     required: true
     description: region where the eks cluster is located
-  aws-access-key:
-    required: false
-    description: AWS access to use
-  aws-secret-key:
-    required: false
-    description: AWS secret key to use
   kube-config:
     required: false
     description: Path to the kubeconfig file to update or create. The full path to the file is included in the outputs
@@ -39,6 +33,4 @@ runs:
         KUBECONFIG: ${{ inputs.kube-config }}
         CLUSTER_NAME: ${{ inputs.cluster-name }}
         AWS_REGION: ${{ inputs.aws-region }}
-        AWS_ACCESS_KEY: ${{ inputs.aws-access-key }}
-        AWS_SECRET_ACCESS_KEY: ${{ inputs.aws-secret-key }}
         DEBUG: ${{ runner.debug }}
