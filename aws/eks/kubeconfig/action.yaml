@@ -31,6 +31,9 @@ runs:
         KUBECONFIG=${KUBECONFIG:-".kubeconfig"}
         aws eks update-kubeconfig --region "${AWS_REGION}" --name "${CLUSTER_NAME}"
         echo "kubeconfig=$(readlink -e $KUBECONFIG)" >> $GITUB_OUTPUT
+        if [ ! -z "${DEBUG}" ]; then
+          cat "${KUBECONFIG}"
+        fi
         #@end=bash@
       env:
         KUBECONFIG: ${{ inputs.kube-config }}
@@ -38,3 +41,4 @@ runs:
         AWS_REGION: ${{ inputs.aws-region }}
         AWS_ACCESS_KEY: ${{ inputs.aws-access-key }}
         AWS_SECRET_ACCESS_KEY: ${{ inputs.aws-secret-key }}
+        DEBUG: ${{ runner.debug }}
