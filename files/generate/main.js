@@ -8,8 +8,10 @@ if (process.env.STATE_filepath !== undefined) {
     fs.unlinkSync(process.env.STATE_filepath);
   }
 } else {
+  const append = (process.env.INPUT_APPEND || "").toLowerCase() === "true";
+  const flags = append && "a" || "w";
   const writePath = path.resolve(process.env.INPUT_FILEPATH);
-  fs.writeFileSync(writePath, process.env.INPUT_CONTENT);
+  fs.writeFileSync(writePath, process.env.INPUT_CONTENT, {flags});
   fs.appendFileSync(process.env.GITHUB_STATE, `filepath=${writePath}${EOL}`);
   fs.appendFileSync(process.env.GITHUB_OUTPUT, `filepath=${writePath}${EOL}`);
 }
