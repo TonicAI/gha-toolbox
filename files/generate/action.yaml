@@ -10,6 +10,10 @@ inputs:
   cleanup:
     required: false
     description: "Set to true to remove file at workflow end"
+  append:
+    required: false
+    description: "Set to true to append to file if it exists already"
+    default: "false"
 outputs:
   path:
     description: Absolute path to the generated file
