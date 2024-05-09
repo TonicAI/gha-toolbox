@@ -1,4 +1,4 @@
-name: Connect to EKS
+name: Add EKS to kubeconfig
 description: Updates kubeconfig for an EKS cluster
 inputs:
   cluster-name:
@@ -24,9 +24,13 @@ runs:
         #@begin=bash@
         KUBECONFIG=${KUBECONFIG:-".kubeconfig"}
         aws eks update-kubeconfig --region "${AWS_REGION}" --name "${CLUSTER_NAME}"
-        echo "kubeconfig=$(realpath $KUBECONFIG)" >> $GITUB_OUTPUT
+        echo "kubeconfig=$(readlink -e $KUBECONFIG)" >> $GITHUB_OUTPUT
+        if [ ! -z "${DEBUG}" ]; then
+          cat "${KUBECONFIG}"
+        fi
         #@end=bash@
       env:
         KUBECONFIG: ${{ inputs.kube-config }}
-        AWS_REGION: ${{ inputs.aws-region }}
         CLUSTER_NAME: ${{ inputs.cluster-name }}
+        AWS_REGION: ${{ inputs.aws-region }}
+        DEBUG: ${{ runner.debug }}
