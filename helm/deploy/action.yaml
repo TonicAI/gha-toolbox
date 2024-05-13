@@ -1,0 +1,66 @@
+name: Helm Deploy
+description: Applies a chart to a kubernetes cluster
+inputs:
+  chart:
+    description: Chart to install
+    required: true
+  name:
+    description: Name of installation
+    required: true
+  namespace:
+    description: Namespace to install chart in
+    required: true
+  values-files:
+    description: New line separated paths to value files to use
+    required: false
+  values:
+    description: yaml formatted values to use
+    required: false
+  chart-version:
+    description: Version of chart to install
+    required: false
+  helm-timeout:
+    description: How long helm should wait for the installation to finish
+    required: false
+    default: 20m
+  remove-failed:
+    description: If a previous installation failed, remove it or roll it back
+    required: false
+    default: "true"
+outputs:
+  action:
+    value: ${{ steps.deploy.outputs.action }}
+    description: Whether the chart was installed or upgraded
+  values-file:
+    value: ${{ steps.values.outputs.filepath }}
+    description: Filepath to generated values.yaml file if provided
+
+runs:
+  using: composite
+  steps:
+    - id: values
+      if: inputs.values != ''
+      uses: tonicai/gha-toolbox/files/generate@main
+      with:
+        filepath: ${{ runner.temp }}/values.${{ github.run_id }}-${{ github.run_attempt }}.yaml
+        content: ${{ inputs.values }}
+    - id: deploy
+      shell: bash
+      env:
+        CI_DEBUG: ${{ runner.debug }}
+        CHART: ${{ inputs.chart }}
+        NAME: ${{ inputs.name }}
+        NAMESPACE: ${{ inputs.namespace }}
+        VALUES_FILES: |
+          ${{ inputs.values-files }}
+          ${{ steps.values.outputs.filepath }}
+        CHART_VERSION: ${{ inputs.chart-version }}
+        HELM_TIMEOUT: ${{ inputs.helm-timeout }}
+        REMOVE_FAILED: ${{ inputs.remove-failed }}
+        ACTION_PATH: ${{ github.action_path }}
+      run: ${{ github.action_path }}/deploy.sh
+    - uses: actions/upload-artifact@v4
+      if: always() && steps.deploy.outputs.full-manifest != ''
+      with:
+        name: full-manifest.yaml
+        path: ${{ steps.deploy.outputs.full-manifest }}
