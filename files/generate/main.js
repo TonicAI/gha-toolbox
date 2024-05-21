@@ -14,6 +14,7 @@ if (process.env.STATE_filepath !== undefined) {
     fs.unlinkSync(process.env.STATE_filepath);
   }
 } else {
+  fs.mkdirSync(path.dirname(filepath), { recursive: true });
   fs.writeFileSync(filepath, process.env.INPUT_CONTENT, {flags});
   fs.appendFileSync(process.env.GITHUB_STATE, `filepath=${filepath}${EOL}`);
   fs.appendFileSync(process.env.GITHUB_OUTPUT, `filepath=${filepath}${EOL}`);
