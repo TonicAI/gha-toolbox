@@ -1,0 +1,24 @@
+name: mktempdir
+inputs:
+  root:
+    description: Directory where temporary directory should be made
+    required: false
+    default: ${{ runner.temp }}
+  pattern:
+    description: Pattern for temporary directory
+    required: false
+outputs:
+  path:
+    description: Absolute path to directory
+    value: ${{ steps.mktempdir.outputs.path }}
+runs:
+  using: composite
+  steps:
+    - id: mktempdir
+      shell: bash
+      env:
+        TMP_ROOT: ${{ inputs.root }}
+        TMP_PATT: ${{ inputs.pattern }}
+      run: |
+        mktemp -d -p "${TMP_ROOT}" ${TMP_PATT}
+

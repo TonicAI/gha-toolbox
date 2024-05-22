@@ -1,0 +1,61 @@
+name: jq
+inputs:
+  script:
+    required: true
+    description: jq script
+  input:
+    required: false
+    description: Content to operate on
+  files:
+    required: false
+    description: Space separated files to operate on
+  flags:
+    required: false
+    description: Additional flags to pass to JQ
+outputs:
+  result:
+    description: Result of the jq script
+    value: ${{ steps.jq.outputs.result }}
+  filepath:
+    description: Filepath where result can be found
+    value: ${{ steps.jq.outputs.filepath }}
+
+runs:
+  using: composite
+  steps:
+    - id: tmpdir
+      uses: tonicai/gha-toolbox/files/mktempdir@anr/jq
+    - if: ${{ !inputs.input && !input.files }}
+      shell: bash
+      run: |
+        echo "One of input or files is required"
+        exit 3
+    - id: input
+      if: inputs.input
+      uses: tonicai/gha-toolbox/files/generate@main
+      with:
+        filepath: ${{ steps.tmpdir.outputs.path }}/input
+        content: ${{ inputs.input }}
+    - id: script
+      uses: tonicai/gha-toolbox/files/generate@main
+      with:
+        filepath: ${{ steps.tmpdir.outputs.path }}/script
+        content: ${{ input.script }}
+    - id: jq
+      shell: bash
+      env:
+        FILES: ${{ inputs.files }} ${{ steps.inputs.outputs.filepath }}
+        FLAGS: ${{ inputs.flags }}
+        SCRIPT: ${{ steps.script.outputs.filepath }}
+        OUT: ${{ steps.tmpdir.outputs.path }}/result
+      run: |
+        #@begin=bash@
+        jq ${FLAGS} -f ${SCRIPT} -- ${FILES} > ${OUT}
+        echo "filepath=${OUT}" >> $GITHUB_OUTPUT
+
+        EOF=$(uuidgen)
+        echo "result<<${EOF}" >> $GITHUB_OUTPUT
+        cat ${OUT} >> $GITHUB_OUTPUT
+        echo ${EOF} >> $GITHUB_OUTPUT
+        #@end=bash@
+
