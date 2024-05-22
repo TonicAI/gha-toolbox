@@ -1,0 +1,31 @@
+name: Ephemeral Database
+inputs:
+  host:
+    required: true
+    description: Ephemeral host
+  key:
+    required: true
+    description: Ephemeral api key
+  name:
+    required: true
+    description: Name of the database
+  mode:
+    required: true
+    description: create-if-not-exists or delete-if-exists
+  configuration:
+    description: Database configuration when creating
+outputs:
+  host:
+    description: Database hostname
+  port:
+    description: Database port
+  username:
+    description: Database username
+  password:
+    description: Database password
+  database:
+    description: Logical database name
+runs:
+  using: node20
+  pre: setup.js
+  main: index.js
