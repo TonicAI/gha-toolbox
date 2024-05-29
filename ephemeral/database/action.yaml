@@ -27,5 +27,4 @@ outputs:
     description: Logical database name
 runs:
   using: node20
-  pre: setup.js
   main: index.js
