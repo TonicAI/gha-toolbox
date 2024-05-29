@@ -133,7 +133,12 @@ async function main() {
     case "destroy-many":
       const names = name.split("\n");
       for (const thisName of names) {
-        await runDestroy(client, thisName);
+        await runDestroy(client, thisName).catch(error => {
+          core.setFailed(`Failed to delete ${thisName}\n${error.message}`);
+          if (error instanceof Error && error.stack) {
+            core.debug(error.stack);
+          }
+        });
       }
       break;
     default:
