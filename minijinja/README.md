@@ -5,6 +5,9 @@ Renders a minijinja template, either to file or to `$GITHUB_OUTPUT`.
 ## Examples
 
 ```yaml
+# install setup minijinja
+- uses: tonicai/gha-toolbox/minijinja/setup@main
+---
 # render template and values from inputs
 - id: render
   uses: tonicai/gha-toolbox/tpl@main
@@ -35,7 +38,6 @@ Renders a minijinja template, either to file or to `$GITHUB_OUTPUT`.
     pass-env: true # default is false
     output: path/to/rendered # default is -
     fuel: 30 # provides fuel...?
-    minijinja-bin: path/to/minijinja-cli # default is to detect and install
     includes: false # disables includes, default is to allow all includes
     # only allows these paths, default is to allow all includes
     includes: |
