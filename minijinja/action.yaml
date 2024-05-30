@@ -1,0 +1,121 @@
+name: Minijinja
+description: Renders a minijinja template
+inputs:
+  template:
+    required: true
+    description: Template to render. Begin with `file://` to give a file path
+  values:
+    required: true
+    description: |
+      Values to render template with. Begin with `file://` to give a file path
+  values-format:
+    required: true
+    description: Format of values (one of json, yaml, toml, cbor, querystring)
+  strict:
+    description: Set to true to enable strict more (default)
+    default: "true"
+  includes:
+    description: |
+      Set to "false" to disable all includes, or pass a new line delimited list
+      of safe include paths
+  pass-env:
+    description: Set to "true" to pass environment variables to the template
+  output:
+    description: |
+      Set to a file path to write rendered template there instead of to action
+      outputs
+    default: '-'
+outputs:
+  rendered:
+    description: Rendered template when output is set to `-`
+    value: ${{ steps.render.outputs.rendered }}
+  filepath:
+    description: |
+      Absolute file path to the rendered template when output is a file path
+    value: ${{ steps.render.outputs.filepath }}
+
+runs:
+  using: "composite"
+  steps:
+    - id: prepare
+      shell: bash
+      env:
+        TPL: ${{ inputs.template }}
+        VALUES: ${{ inputs.values }}
+      run: |
+        #@begin=bash@
+        echo "uuid=$(uuidgen)" >> $GITHUB_OUTPUT
+        if [[ $TPL == file://* ]]; then
+          echo "tpl-filepath=${TPL#file://}" >> $GITHUB_OUTPUT
+        fi
+
+        if [[ $VALUES == file://* ]]; then
+          echo "values-filepath=${VALUES#file://}" >> $GITHUB_OUTPUT
+        fi
+        #@end=bash@
+    - id: tpl-file
+      if: ${{ steps.prepare.outputs.tpl-filepath == '' }}
+      uses: tonicai/gha-toolbox/files/generate@main
+      with:
+        touch: "true"
+        filepath: ${{ runner.temp }}/minijinja/${{ steps.prepare.outputs.uuid }}/tpl
+        content: ${{ inputs.template }}
+    - id: values-file
+      if: ${{ steps.prepare.outputs.values-filepath == '' }}
+      uses: tonicai/gha-toolbox/files/generate@main
+      with:
+        touch: "true"
+        filepath: ${{ runner.temp }}/minijinja/${{ steps.prepare.outputs.uuid }}/values
+        content: ${{ inputs.values }}
+    - id: render
+      shell: bash
+      env:
+        INCLUDES: ${{ inputs.includes }}
+        OUTPUT: ${{ inputs.output }}
+        PASS_ENV: ${{ inputs.pass-env }}
+        STRICT: ${{ inputs.strict }}
+        TPL_PATH: ${{ steps.tpl-file.outputs.filepath || steps.prepare.outputs.tpl-filepath }}
+        UUID: ${{ steps.prepare.outputs.uuid }}
+        VALUES_PATH: ${{ steps.values-file.outputs.filepath || steps.prepare.outputs.values-filepath }}
+        VALUES_FORMAT: ${{ inputs.values-format }}
+      run: |
+        #@begin=bash@
+        COMMENT_PATTERN="^ *#"
+        ARGS="--format ${VALUES_FORMAT} --output ${OUTPUT}"
+        if [ ! -z "${PASS_ENV}" ]; then
+          ARGS="${ARGS} --env"
+        fi
+
+        if [ "${STRICT,,}" == "true" ]; then
+          ARGS="${ARGS} --strict"
+        fi
+
+        case $INCLUDES in
+          false )
+            ARGS="${ARGS} --no-include"
+            ;;
+          "" )
+            ;;
+          * )
+            while IFS= read -r line || [[ -n $line ]]; do
+              if [ -z "${line}" ] || [[ $line =~ $COMMENT_PATTERN ]]; then
+                continue
+              fi
+              ARGS="${ARGS} --safe-path $line"
+            done < <(printf '%s' "${INCLUDES}")
+            ;;
+        esac
+
+        RENDERED=$(minijinja-cli $ARGS $TPL_PATH $VALUES_PATH)
+
+        case $OUTPUT in
+          - )
+            echo "rendered<<${UUID}" >> $GITHUB_OUTPUT
+            echo $RENDERED >> $GITHUB_OUTPUT
+            echo $UUID >> $GITHUB_OUTPUT
+            ;;
+          * )
+            echo "filepath=$(realpath $OUTPUT)" >> $GITHUB_OUTPUT
+            ;;
+        esac
+        #@end=bash@
