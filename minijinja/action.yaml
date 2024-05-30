@@ -27,10 +27,6 @@ inputs:
     default: '-'
   fuel:
     description: configures the maximum fuel
-  minijinja-bin:
-    description: |
-      If set, this path is used for the binary. Otherwise it is installed if
-      needed.
 outputs:
   rendered:
     description: Rendered template when output is set to `-`
@@ -52,25 +48,8 @@ runs:
       env:
         TPL: ${{ inputs.template }}
         VALUES: ${{ inputs.values }}
-        MINIJINJA: ${{ inputs.minijinja-bin }}
       run: |
         #@begin=bash@
-
-        DEFAULT_MINIJINJA_BIN="${HOME}/.cargo/bin/minijinja-cli"
-        MINIJINJA_BIN=$DEFAULT_MINIJINJA_BIN
-        if [ ! -z "${MINIJINJA}" ]; then
-          MINIJINJA_BIN=$MINIJINJA
-          echo "minijinja-bin=${MINIJINJA}" >> $GITHUB_OUTPUT
-        else if command -v minijinja-cli &> /dev/null; then
-          MINIJINJA_BIN=$(command -v minijinja-cli)
-        else
-          if [ ! -f "${DEFAULT_MINIJINJA_BIN}" ]; then
-            curl -sSfL https://github.com/mitsuhiko/minijinja/releases/latest/download/minijinja-cli-installer.sh | sh
-          fi
-        if
-
-        echo "minijinja-bin=${MINIJINJA_BIN}" >> $GITHUB_OUTPUT
-
         if [[ $TPL == file://* ]]; then
           echo "tpl-filepath=${TPL#file://}" >> $GITHUB_OUTPUT
         fi
@@ -96,7 +75,6 @@ runs:
       env:
         FUEL: ${{ inputs.fuel }}
         INCLUDES: ${{ inputs.includes }}
-        MINIJINJA: ${{ steps.prepare.outputs.minijinja-bin }}
         OUTPUT: ${{ inputs.output }}
         PASS_ENV: ${{ inputs.pass-env }}
         STRICT: ${{ inputs.strict }}
@@ -136,7 +114,7 @@ runs:
             ;;
         esac
 
-        RENDERED=$($MINIJINJA $ARGS $TPL_PATH $VALUES_PATH)
+        RENDERED=$(minijinja-cli $ARGS $TPL_PATH $VALUES_PATH)
 
         case $OUTPUT in
           - )
