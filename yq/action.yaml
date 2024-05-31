@@ -1,0 +1,106 @@
+name: yq
+description: Extracts tables from markdown and returns them as json
+inputs:
+  script:
+    description: |
+      YQ script to run on input, or filepath to script. Begin with file:// for
+      filepath.
+  input:
+    description: |
+      Content or filepath, begin with file:// for filepath. If no content is
+      passed, `--null-input` is set.
+  input-format:
+    default: "yaml"
+    description: Format of input, default is "yaml"
+  output:
+    default: "-"
+    description: |
+      One of:
+        * '-': Writes result to $GITHUB_OUTPUT (default)
+        * 'inplace': Updates input file inplace
+        * filepath: Writes output to this path
+  output-format:
+    default: "yaml"
+    description: Foramt of output, default is "yaml"
+  indent:
+    default: '2'
+    description: Indent size to use, set to '0' for compact
+outputs:
+  result:
+    description: Result of YQ expression when output is "-"
+    value: ${{ steps.yq.outputs.result }}
+  filepath:
+    description: Result of YQ expression when output is a filepath
+    value: ${{ steps.yq.outputs.filepath }}
+
+runs:
+  using: "composite"
+  steps:
+    - id: prepare
+      shell: bash
+      env:
+        INPUT: ${{ inputs.input }}
+        SCRIPT: ${{ inputs.script }}
+        TMPDIR: ${{ runner.temp }}
+      run: |
+        #@begin=bash@
+        if [[ $INPUT == file://* ]]; then
+          echo "input-filepath=${INPUT#file://}" >> $GITHUB_OUTPUT
+        fi
+
+        if [[ $SCRIPT == file://* ]]; then
+          echo "script-filepath=${SCRIPT#file://}" >> $GITHUB_OUTPUT
+        fi
+
+        DIR=$(mktemp -d -p $TMPDIR "yq.XXXXXX")
+        echo "dir=$(realpath $DIR)" >> $GITHUB_OUTPUT
+        #@end=bash@
+    - id: input
+      if: ${{ steps.prepare.outputs.input-filepath == '' && inputs.input != '' }}
+      uses: tonicai/gha-toolbox/files/generate@main
+      with:
+        filepath: ${{ steps.prepare.outputs.dir }}/input
+        content: ${{ inputs.input }}
+    - id: script
+      if: ${{ steps.prepare.outputs.script-filepath == '' }}
+      uses: tonicai/gha-toolbox/files/generate@main
+      with:
+        filepath: ${{ steps.prepare.outputs.dir }}/script
+        content: ${{ inputs.script }}
+    - id: yq
+      shell: bash
+      env:
+        INPUT: ${{ steps.input.outputs.filepath || steps.prepare.outputs.input-filepath }}
+        INPUT_FORMAT: ${{ inputs.input-format }}
+        OUTPUT: ${{ inputs.output }}
+        OUTPUT_FORMAT: ${{ inputs.output-format }}
+        SCRIPT: ${{ steps.script.outputs.filepath || steps.prepare.outputs.script-filepath }}
+        INDENT: ${{ inputs.indent }}
+      run: |
+        #@begin=bash@
+        ARGS="--from-file ${SCRIPT} --output-format ${OUTPUT_FORMAT} -I${INDENT}"
+
+        if [ -z "${INPUT}" ]; then
+          ARGS="${ARGS} --null-input"
+        else
+          ARGS="${ARGS} --input-format ${INPUT_FORMAT} ${INPUT}"
+        fi
+
+        case $OUTPUT in
+          - | '' )
+            RESULT=$(yq ${ARGS})
+            UUID=$(uuidgen)
+            echo "result<<${UUID}" >> $GITHUB_OUTPUT
+            echo "$RESULT" >> $GITHUB_OUTPUT
+            echo $UUID >> $GITHUB_OUTPUT
+            ;;
+          inplace )
+            yq --inplace ${ARGS}
+            echo "filepath=$(realpath ${INPUT})" >> $GITHUB_OUTPUT
+            ;;
+          * )
+            yq ${ARGS} > $OUTPUT
+            echo "filepath=$(realpath ${OUTPUT})" >> $GITHUB_OUTPUT
+            ;;
+        esac
+        #@end=bash@

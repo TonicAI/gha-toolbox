@@ -1,0 +1,31 @@
+name: Extract Tables
+description: Extracts tables from markdown and returns them as json
+inputs:
+  markdown:
+    required: true
+    description: Markdown containing tables to extract
+  orientation:
+    default: "rows"
+    description: Orientation of tables in markdown, "rows" or "columns"
+  output:
+    default: "-"
+    description: |
+      Set to a file path to write extracted tables to. Default is "-" which
+      writes to $GITHUB_OUTPUT
+  format:
+    default: "objects"
+    description: |
+      Format to output tables in, either:
+        * `objects`: (Default) Produces a `Object[]`
+        * `arrays`: Produces a `string[][][]`
+outputs:
+  tables:
+    description: |
+      JSON list with every table extracted from the markdown when output is "-"
+  filepath:
+    description: |
+      Absolute filepath to json file with extracted tables when output is not "-"
+
+runs:
+  using: node20
+  main: main.js
