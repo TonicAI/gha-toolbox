@@ -87,8 +87,7 @@ When the mode is specified as `destroy-if-exists` the action will first query th
 ```
 
 ## Destroy multiple databases
-When the mode is specified as `destroy-if-exists` the action will first query the Ephemeral user's databases for a database with the given input `name`.  If exactly one database with a matching name is found, this action will make a request to delete it.
-
+When the mode is specified as `destroy-many` the action will parse the `name` input as a list of database names separated by newlines, and will execute the `destroy-if-exists` functionality for each database.
 ```yaml
 - uses: tonicai/gha-toolbox/ephemeral/database@main 
   with:
