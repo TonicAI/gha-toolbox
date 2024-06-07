@@ -2,7 +2,9 @@
 
 This action is used to create or destroy a database on a Tonic Ephemeral deployment.
 
-A Tonic Ephemeral host must be provided, alongside a valid API key in order to authenticate with the server.  API keys for a user can be made in the UI of Tonic Ephemeral on the settings page.
+A Tonic Ephemeral host must be provided, alongside a valid API key in order to authenticate with the server.
+
+API keys for a user can be made in the UI of Tonic Ephemeral on the settings page.
 
 # Usage
 
@@ -10,7 +12,6 @@ A Tonic Ephemeral host must be provided, alongside a valid API key in order to a
 ```yaml
 - uses: tonicai/ephemeral-database
   with:
-
     # Hostname of the Tonic Ephemeral deployment
     host: 'https://ephemeral.tonic.ai'
 
@@ -21,7 +22,7 @@ A Tonic Ephemeral host must be provided, alongside a valid API key in order to a
     name: 'My Ephemeral Database'
     
     # Whether to create a database named <name> or to destroy the database named <name>
-    # Can be either: create-if-not-exists | delete-if-exists
+    # Possible values: [ 'create-if-not-exists' | 'delete-if-exists' ]
     mode: 'create-if-not-exists'
 
     # The configuration to give the database, when in create mode
