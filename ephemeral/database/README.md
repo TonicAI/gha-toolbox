@@ -103,8 +103,8 @@ When the mode is specified as `destroy-if-exists` the action will first query th
 
     mode: destroy-many
 ```
-
+<!--
 # License
 
 TODO
-
+-->
