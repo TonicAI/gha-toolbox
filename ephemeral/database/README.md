@@ -26,7 +26,15 @@ API keys for a user can be made in the UI of Tonic Ephemeral on the settings pag
     mode: 'create-if-not-exists'
 
     # The configuration to give the database, when in create mode
-    configuration: 'TODO: yaml' 
+    # See ephemeral documentation for more details
+    configuration: |
+      baseImageId: 626ba666-82d7-4466-b885-cdd731834157
+      resourceGroupId: 53ef99c8-06ea-4480-a6aa-f4aeabdc6ead
+      storageSizeInGigabytes: 5
+      volumeReference: example.com/ephemeral-volumes:postgres
+      configurationFile: |
+        max_connections = 300
+        shared_buffers = 80MB
 ```
 <!-- end usage -->
 
