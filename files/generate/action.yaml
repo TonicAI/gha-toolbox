@@ -15,7 +15,7 @@ inputs:
     description: "Set to true to append to file if it exists already"
     default: "false"
 outputs:
-  path:
+  filepath:
     description: Absolute path to the generated file
 runs:
   using: "node20"
