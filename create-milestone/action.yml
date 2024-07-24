@@ -1,0 +1,12 @@
+name: 'Create New Milestone'
+description: 'Create a new milestone by incrementing the number from the newly created release'
+inputs:
+  repo-token:
+    required: true
+    description: 'The GITHUB_TOKEN secret'
+outputs:
+  milestone:
+    description: 'The Created Milestone'
+runs:
+  using: 'node20'
+  main: 'index.js'

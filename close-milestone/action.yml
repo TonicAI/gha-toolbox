@@ -1,0 +1,12 @@
+name: 'Close Milestone'
+description: 'Closes the milestone related to the newly published release'
+inputs:
+  repo-token:
+    required: true
+    description: 'The GITHUB_TOKEN secret'
+outputs:
+  milestone:
+    description: 'The Closed Milestone'
+runs:
+  using: 'node20'
+  main: 'index.js'

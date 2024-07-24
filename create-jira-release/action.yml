@@ -1,0 +1,13 @@
+name: 'Create Jira Release'
+description: 'Copies milestone information from Github into Jira release'
+inputs:
+    repo-token:
+        required: true
+        description: 'The GITHUB_TOKEN secret'
+    milestone:
+        required: true
+        description: 'The milestone to copy data from'
+
+runs:
+    using: 'node20'
+    main: 'index.js'
