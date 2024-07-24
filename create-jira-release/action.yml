@@ -7,6 +7,9 @@ inputs:
     milestone:
         required: true
         description: 'The milestone to copy data from'
+    milestone-prefix:
+        required: false
+        description: 'Prefix that should be used for releases created in Jira. This should be product name like Textual, Ephemeral etc.'
 
 runs:
     using: 'node20'

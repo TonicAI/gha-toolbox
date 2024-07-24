@@ -33,9 +33,11 @@ async function run() {
 
     const filteredIssues = issues.filter((i) => i.pull_request.merged_at);
 
+    const milestonePrefix = core.getInput("milestone-prefix", { required: false }) || '';
+    const releaseName = `${milestonePrefix}-${milestoneName}`;
     const releasePayload = {
         data: {
-            releaseName: milestoneName,
+            releaseName: releaseName,
             githubLink: milestone.html_url,
             releaseDate: new Date(milestone.closed_at)
                 .toISOString()
@@ -44,13 +46,6 @@ async function run() {
     };
 
     core.debug(`releasePayload: ${JSON.stringify(releasePayload)}`);
-
-    const issuePayload = {
-        data: {
-            releaseName: milestoneName,
-        },
-        issues: [],
-    };
 
     //Create Release
     const createReleaseResponse = await post(
@@ -63,6 +58,12 @@ async function run() {
     //Wait for release to be created
     await new Promise((resolve) => setTimeout(resolve, 10000));
 
+    const issuePayload = {
+        data: {
+            releaseName: releaseName,
+        },
+        issues: [],
+    };
     if (filteredIssues.length) {
         for (const issue of filteredIssues) {
             const matches = issue.title.match(/(TN-\d*)/g);
