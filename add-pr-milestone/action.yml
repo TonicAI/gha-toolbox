@@ -1,0 +1,12 @@
+name: 'Add Milestone To PR'
+description: 'Add milestone to PRs'
+inputs:
+  repo-token:
+    required: true
+    description: 'The GITHUB_TOKEN secret'
+outputs:
+  milestone:
+    description: 'The Milestone added to the PR'
+runs:
+  using: 'node20'
+  main: 'index.js'
