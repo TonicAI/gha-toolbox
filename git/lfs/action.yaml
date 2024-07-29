@@ -1,0 +1,42 @@
+name: git lfs pull
+inputs:
+  use-cache:
+    default: "true"
+    description: If a cache should be used
+  cache-key:
+    default: "lfs-build-1"
+    description: Cache key to use
+  fetch-exclude:
+    description: Provided to 'lfs.fetchexclude'
+    required: false
+  fetch-include:
+    description: Provided to 'lfs.fetchinclude'
+    required: false
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      if: inputs.fetch-exclude != ''
+      env:
+        FETCH_EXCLUDE: ${{ inputs.fetch-exclude }}
+      run: git config lfs.fetchexclude "${FETCH_EXCLUDE}"
+    - shell: bash
+      if: inputs.fetch-include != ''
+      env:
+        FETCH_INCLUDE: ${{ inputs.fetch-include }}
+      run: git config lfs.fetchinclude "${FETCH_INCLUDE}"
+    - if: inputs.use-cache == 'true'
+      shell: bash
+      run: |
+        git lfs ls-files -l | cut -d' ' -f1 | sort > .lfs-assets-id
+    - uses: actions/cache@v4
+      id: lfs-cache
+      if: inputs.use-cache == 'true'
+      with:
+        path: .git/lfs
+        key: ${{ runner.os }}-${{ inputs.cache-key }}-${{ hashFiles('.lfs-assets-id') }}
+        restore-keys: ${{ runner.os }}-${{ inputs.cache-key }}-
+    - if: ${{ steps.lfs-cache.outputs.cache-hit !=  'true' }}
+      shell: bash
+      run: git lfs pull
