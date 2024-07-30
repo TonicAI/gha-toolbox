@@ -13,7 +13,10 @@ runs:
       shell: bash
       run: |
         #@begin=bash@
-        mkdir -p ${CARGO_HOME}/bin
-        curl -sSfL https://github.com/mitsuhiko/minijinja/releases/${VERSION}/download/minijinja-cli-installer.sh | sh
-        echo "${CARGO_HOME}/bin" >> $GITHUB_PATH
+        if ! command -v minijinja &>/dev/null; then
+          echo "Installing minijinja"
+          mkdir -p ${CARGO_HOME}/bin
+          curl -sSfL https://github.com/mitsuhiko/minijinja/releases/${VERSION}/download/minijinja-cli-installer.sh | sh
+          echo "${CARGO_HOME}/bin" >> $GITHUB_PATH
+        fi
         #@end=bash@

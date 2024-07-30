@@ -1,4 +1,4 @@
-# tonicai/gha-toolbox/tpl
+# tonicai/gha-toolbox/minijinja
 
 Renders a minijinja template, either to file or to `$GITHUB_OUTPUT`.
 
@@ -10,7 +10,7 @@ Renders a minijinja template, either to file or to `$GITHUB_OUTPUT`.
 ---
 # render template and values from inputs
 - id: render
-  uses: tonicai/gha-toolbox/tpl@main
+  uses: tonicai/gha-toolbox/minijinja@main
   with:
     template: Hello {{ name | upper }}
     values: |
@@ -19,7 +19,7 @@ Renders a minijinja template, either to file or to `$GITHUB_OUTPUT`.
 ---
 # render template and values from files
 - id: render
-  uses: tonicai/gha-toolbox/tpl@main
+  uses: tonicai/gha-toolbox/minijinja@main
   with:
     # file:// is stripped
     template: file://path/to/template
@@ -29,7 +29,7 @@ Renders a minijinja template, either to file or to `$GITHUB_OUTPUT`.
 ---
 # enable various options
 - id: render
-  uses: tonicai/gha-toolbox/tpl@main
+  uses: tonicai/gha-toolbox/minijinja@main
   with:
     template: ...
     values: ...

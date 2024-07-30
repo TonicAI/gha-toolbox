@@ -25,8 +25,6 @@ inputs:
       Set to a file path to write rendered template there instead of to action
       outputs
     default: '-'
-  fuel:
-    description: configures the maximum fuel
 outputs:
   rendered:
     description: Rendered template when output is set to `-`
@@ -73,7 +71,6 @@ runs:
     - id: render
       shell: bash
       env:
-        FUEL: ${{ inputs.fuel }}
         INCLUDES: ${{ inputs.includes }}
         OUTPUT: ${{ inputs.output }}
         PASS_ENV: ${{ inputs.pass-env }}
@@ -86,10 +83,6 @@ runs:
         #@begin=bash@
         COMMENT_PATTERN="^ *#"
         ARGS="--format ${VALUES_FORMAT} --output ${OUTPUT}"
-        if [ ! -z "${FUEL}" ]; then
-          ARGS="${ARGS} --fuel ${FUEL}"
-        fi
-
         if [ ! -z "${PASS_ENV}" ]; then
           ARGS="${ARGS} --env"
         fi
