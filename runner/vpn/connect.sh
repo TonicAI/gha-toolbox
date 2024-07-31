@@ -16,16 +16,6 @@ chmod 600 dev.pem
 
 sudo openvpn --config "github_action.ovpn" --log "vpn.log" --daemon
 
-if [ ! -z "${EXPLICIT_ROUTES}" ]; then
-  echo "Updating routing tables"
-  ip route
-  for route in ${EXPLICIT_ROUTES}; do
-    sudo ip route add "${route}" dev tun0
-  done
-  echo "Configured table"
-  ip route
-fi
-
 if [ ! -z "${DNS_SERVERS}" ]; then
     echo "Configuring DNS to use ${DNS_SERVERS}"
     sudo sed -i "s/#DNS=/DNS=${DNS_SERVERS}/g" /etc/systemd/resolved.conf
@@ -38,4 +28,17 @@ if [ ! -z "${PING_TARGET}" ]; then
   echo "Waiting to make connection to ping target..."
   until ping -c1 "${PING_TARGET}"; do sleep 2; done
   echo "Contact made"
+fi
+
+echo "Links:"
+ip link
+echo "Routes:"
+ip route
+
+if [ ! -z "${EXPLICIT_ROUTES}" ]; then
+  for route in ${EXPLICIT_ROUTES}; do
+    sudo ip route add "${route}" dev tun0
+  done
+  echo "Configured table"
+  ip route
 fi
