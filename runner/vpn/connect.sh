@@ -30,6 +30,8 @@ if [ ! -z "${PING_TARGET}" ]; then
   echo "Contact made"
 fi
 
+echo "addr:"
+ip addr
 echo "Links:"
 ip link
 echo "Routes:"
