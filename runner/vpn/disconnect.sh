@@ -8,4 +8,4 @@ echo "Disconnecting..."
 
 sudo pkill openvpn;
 echo -e "VPN Log: \n"
-cat vpn.log
+sudo cat vpn.log
