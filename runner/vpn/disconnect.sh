@@ -6,11 +6,6 @@ echo "Removing sensitive files..."
 
 echo "Disconnecting..."
 
-if ! sudo pkill openvpn; then
-    echo -e "VPN Log: \n"
-    cat vpn.log
-fi
-
-
-
-
+sudo pkill openvpn;
+echo -e "VPN Log: \n"
+cat vpn.log

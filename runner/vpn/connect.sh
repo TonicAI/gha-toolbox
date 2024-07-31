@@ -29,18 +29,3 @@ if [ ! -z "${PING_TARGET}" ]; then
   until ping -c1 "${PING_TARGET}"; do sleep 2; done
   echo "Contact made"
 fi
-
-echo "addr:"
-ip addr
-echo "Links:"
-ip link
-echo "Routes:"
-ip route
-
-if [ ! -z "${EXPLICIT_ROUTES}" ]; then
-  for route in ${EXPLICIT_ROUTES}; do
-    sudo ip route add "${route}" dev tun0
-  done
-  echo "Configured table"
-  ip route
-fi
