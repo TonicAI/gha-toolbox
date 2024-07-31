@@ -18,6 +18,7 @@ sudo openvpn --config "github_action.ovpn" --log "vpn.log" --daemon
 
 if [ ! -z "${EXPLICIT_ROUTES}" ]; then
   echo "Updating routing tables"
+  ip route
   for route in ${EXPLICIT_ROUTES}; do
     sudo ip route add "${route}" dev tun0
   done
