@@ -15,7 +15,7 @@ async function run() {
             state: "open",
         }
     );
-    if (!pullRequests || !pullRequests.length) {
+    if (!pullRequests) {
         throw new Error("Unable to get pr list.");
     }
 
