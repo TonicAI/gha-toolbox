@@ -37,6 +37,5 @@ runs:
         path: .git/lfs
         key: ${{ runner.os }}-${{ inputs.cache-key }}-${{ hashFiles('.lfs-assets-id') }}
         restore-keys: ${{ runner.os }}-${{ inputs.cache-key }}-
-    - if: ${{ steps.lfs-cache.outputs.cache-hit !=  'true' }}
-      shell: bash
+    - shell: bash
       run: git lfs pull
