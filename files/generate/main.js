@@ -9,6 +9,7 @@ const dirname = path.dirname(filepath)
 const append = (process.env.INPUT_APPEND || "").toLowerCase() === "true";
 const touch = (process.env.INPUT_TOUCH || "").toLowerCase() === "true";
 const flags = append && "a" || "w";
+const filemode = process.env.INPUT_FILEMODE;
 
 if (process.env.STATE_filepath !== undefined) {
   if (process.env.INPUT_CLEANUP !== undefined && process.env.INPUT_CLEANUP.toLowerCase() === "true") {
@@ -23,6 +24,9 @@ if (process.env.STATE_filepath !== undefined) {
   }
 
   fs.writeFileSync(filepath, process.env.INPUT_CONTENT, {flags});
+  if (!!filemode) {
+    fs.chmodSync(filepath, parseInt(filemode, 8))
+  }
   fs.appendFileSync(process.env.GITHUB_STATE, `filepath=${filepath}${EOL}`);
   fs.appendFileSync(process.env.GITHUB_OUTPUT, `filepath=${filepath}${EOL}`);
 }
