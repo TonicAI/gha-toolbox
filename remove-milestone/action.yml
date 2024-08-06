@@ -1,0 +1,9 @@
+name: 'Remove PR Milestone'
+description: "Removes a PR's milestone"
+inputs:
+  repo-token:
+    required: true
+    description: 'The GITHUB_TOKEN secret'
+runs:
+  using: 'node20'
+  main: 'index.js'
