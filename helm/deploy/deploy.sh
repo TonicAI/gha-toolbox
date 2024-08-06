@@ -9,6 +9,7 @@ set -eu
 ACTION="create"
 HELM_ARGS=""
 COMMENT_PATTERN="^ *#"
+NAMESPACE="${NAMESPACE,,}"
 
 function add_helm_args() {
   HELM_ARGS="${HELM_ARGS} ${@}"
