@@ -4,11 +4,11 @@ const github = require("@actions/github");
 async function run() {
     const token = core.getInput("repo-token", { required: true });
 
-    const release = Number(
+    const releaseNumber = Number(
         github.context.ref.substr(11, github.context.ref.length - 1)
     );
-    if (release === NaN) return;
-
+    if (isNaN(releaseNumber)) return;
+    const release = releaseNumber.toString().padStart(3, "0");
     const client = new github.getOctokit(token);
 
     const milestones = await client.rest.issues.listMilestones({

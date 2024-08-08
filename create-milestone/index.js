@@ -4,18 +4,18 @@ const github = require("@actions/github");
 async function run() {
     const token = core.getInput("repo-token", { required: true });
 
-    let release;
+    let releaseNumber;
     if (github.context.ref) {
-        release = Number(
+        releaseNumber = Number(
             github.context.ref.substr(11, github.context.ref.length - 1)
         );
     } else if (github.context.event.release.tag_name) {
-        release = Number(
+        releaseNumber = Number(
             github.context.event.release.tag_name.replace("v", "")
         );
     }
 
-    if (isNaN(release)) return;
+    if (isNaN(releaseNumber)) return;
 
     const client = new github.getOctokit(token);
 
@@ -24,6 +24,7 @@ async function run() {
         owner: github.context.payload.repository.owner.login,
     });
 
+    const release = releaseNumber.toString().padStart(3, "0");
     const currentMilestoneTitle = "v" + release;
     const currentMilestone = milestones.data.some(
         (m) => m.title === currentMilestoneTitle
@@ -31,7 +32,9 @@ async function run() {
         ? milestones.data.filter((m) => m.title === currentMilestoneTitle)[0]
         : null;
 
-    const nextMilestoneTitle = "v" + (release + 1);
+    const nextReleaseNumber = releaseNumber + 1;
+    const nextRelease = nextReleaseNumber.toString().padStart(3, "0");
+    const nextMilestoneTitle =  `v${nextRelease}`;
     let nextMilestone = milestones.data.some(
         (m) => m.title === nextMilestoneTitle
     )
