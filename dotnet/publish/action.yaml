@@ -1,0 +1,80 @@
+name: dotnet publish
+description: Publishes a dotnet application to a directory
+inputs:
+  target:
+    description: Publish target
+    required: true
+  configuration:
+    description: Build configuration
+    required: true
+    default: "Release"
+  runtime:
+    description: Runtime target
+    required: true
+    default: linux-x64
+  dotnet-version:
+    description: Version of dotnet to build with
+    required: true
+    default: "8.0"
+  restore:
+    description: Set to `false` to skip restoring
+  self-contained:
+    description: Whether to build a self-contained result
+  args:
+    description: |
+      Posix arguments for `dotnet publish`, e.g. `-p:PublishReadyToRun=true`
+  skip-setup:
+    description: Set to `true` to skip actions/setup-dotnet
+outputs:
+  output:
+    description: Path where the target was built to
+    value: ${{ steps.output.outputs.path }}
+runs:
+  using: "composite"
+  steps:
+    - id: output
+      uses: tonicai/gha-toolbox/files/tmpdir@anr/more-fs-actions
+      with:
+        name: output
+    - uses: tonicai/gha-toolbox/files/generate@anr/more-fs-actions
+      with:
+        append: true
+        filepath: ${{ github.workspace }}/Directory.Build.props
+        content: |
+          <Project>
+            <PropertyGroup>
+              <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
+            </PropertyGroup>
+          </Project>
+    - if: ${{ inputs.skip-setup != 'true' }}
+      id: setup-dotnet
+      uses: actions/setup-dotnet@v4
+      env:
+        DOTNET_NOLOGO: true
+        DOTNET_CLI_TELEMETRY_OPTOUT: true
+      with:
+        cache-dependency-path: '**/*.csproj'
+        global-json-file: ${{ github.workspace }}/global.json
+        cache: true
+        dotnet-version: ${{ inputs.dotnet-version }}
+    - if: ${{ inputs.restore != 'false' && steps.setup-dotnet.outputs.cache-hit != 'true' }}
+      shell: bash
+      run: dotnet restore
+    - shell: bash
+      env:
+        MORE_ARGS: ${{ inputs.args }}
+        CONFIGURATION: ${{ inputs.configuration }}
+        DOTNET_VERSION: ${{ inputs.dotnet-version }}
+        OUTPUT_DIR: ${{ steps.output.outputs.path }}
+        RESTORE: ${{ inputs.restore }}
+        RUNTIME: ${{ inputs.runtime }}
+        SELF_CONTAINED: ${{ inputs.self-contained == 'true' && 'true' || 'false' }}
+        TARGET: ${{ inputs.target }}
+      run: |
+        #@begin=bash@
+        ARGS="--nologo -c ${CONFIGURATION} -f ${DOTNET_VERSION} -r ${RUNTIME}"
+        ARGS="${ARGS} --self-contained ${SELF_CONTAINED} -o ${OUTPUT_DIR}"
+        ARGS="${ARGS} --no-restore"
+        ARGS="${ARGS} ${MORE_ARGS}"
+        dotnet publish ${TARGET} ${ARGS}
+        #@end=bash@

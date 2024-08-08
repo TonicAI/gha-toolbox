@@ -14,6 +14,10 @@ inputs:
     required: false
     description: "Set to true to append to file if it exists already"
     default: "false"
+  filemode:
+    required: false
+    description: "Octal file mode"
+    default: "644"
 outputs:
   filepath:
     description: Absolute path to the generated file
