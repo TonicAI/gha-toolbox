@@ -8,7 +8,7 @@ async function run() {
         github.context.ref.substr(11, github.context.ref.length - 1)
     );
     if (isNaN(releaseNumber)) return;
-    const release = releaseNumber < 100 ? `0${releaseNumber}` : releaseNumber;
+    const release = releaseNumber.toString().padStart(3, "0");
     const client = new github.getOctokit(token);
 
     const milestones = await client.rest.issues.listMilestones({

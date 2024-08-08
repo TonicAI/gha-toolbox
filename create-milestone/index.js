@@ -24,7 +24,7 @@ async function run() {
         owner: github.context.payload.repository.owner.login,
     });
 
-    const release = releaseNumber < 100 ? `0${releaseNumber}` : releaseNumber;
+    const release = releaseNumber.toString().padStart(3, "0");
     const currentMilestoneTitle = "v" + release;
     const currentMilestone = milestones.data.some(
         (m) => m.title === currentMilestoneTitle
@@ -33,7 +33,8 @@ async function run() {
         : null;
 
     const nextReleaseNumber = releaseNumber + 1;
-    const nextMilestoneTitle =  nextReleaseNumber < 100 ? `v0${nextReleaseNumber}` : `v${nextReleaseNumber}`;
+    const nextRelease = nextReleaseNumber.toString().padStart(3, "0");
+    const nextMilestoneTitle =  `v${nextRelease}`;
     let nextMilestone = milestones.data.some(
         (m) => m.title === nextMilestoneTitle
     )
