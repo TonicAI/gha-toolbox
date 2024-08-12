@@ -16,27 +16,44 @@ async function run() {
 
     const issues = JSON.parse(getIssuesFromReleaseResponse).issues;
     const customFieldValues = issues.map(issue => issue.fields.customfield_10049).filter(value => value);
-    const releaseNotes = customFieldValues.map(data => extractTextFromCustomField(data)).join("\n");
+    const releaseNotesAsHtml = customFieldValues
+        .map(fieldData => convertToHtml(fieldData))
+        .join('\n');
 }
 
-function extractTextFromCustomField(fieldData) {
-    let text = '';
-
+function convertToHtml(content) {
+    let html = '';
     function traverseContent(contentArray) {
         contentArray.forEach(item => {
-            if (item.type === 'text' && item.text) {
-                text += item.text + ' ';
-            } else if (item.content) {
-                traverseContent(item.content);
+            switch (item.type) {
+                case 'paragraph':
+                    html += '<p>';
+                    if (item.content) traverseContent(item.content);
+                    html += '</p>';
+                    break;
+                case 'text':
+                    html += item.text;
+                    break;
+                case 'bulletList':
+                    html += '<ul>';
+                    if (item.content) traverseContent(item.content);
+                    html += '</ul>';
+                    break;
+                case 'listItem':
+                    html += '<li>';
+                    if (item.content) traverseContent(item.content);
+                    html += '</li>';
+                    break;
+                // Add cases for other types if needed
             }
         });
     }
 
-    if (fieldData && fieldData.content) {
-        traverseContent(fieldData.content);
+    if (content && content.content) {
+        traverseContent(content.content);
     }
 
-    return text.trim();
+    return html;
 }
 
 function get(host, path, authToken) {
