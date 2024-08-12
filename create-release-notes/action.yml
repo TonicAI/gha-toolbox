@@ -1,0 +1,16 @@
+name: 'Create Jira Release Notes'
+description: 'Creates Jira Release Notes'
+inputs:
+    fix-version:
+        required: true
+        description: 'Fix version for which to create release notes'
+    jira-username:
+        required: true
+        description: 'JIRA username for api access.'
+    jira-token:
+        required: true
+        description: 'JIRA user api token.'
+
+runs:
+    using: 'node20'
+    main: 'index.js'
