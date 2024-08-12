@@ -22,6 +22,9 @@ inputs:
   tf-vars:
     required: false
     description: line separated key=value pairs to pass as terraform variables
+  include-in-artifact:
+    required: false
+    description: additional paths to include in the workdir.tar.gz
 runs:
   using: composite
   steps:
@@ -75,8 +78,9 @@ runs:
     - name: Tarchive workdir
       env:
         WORKDIR: ${{ inputs.working-directory }}
+        ADDITIONAL: ${{ inputs.include-in-artifact }}
       shell: bash
-      run: tar -czvf workdir.tar.gz "${WORKDIR}"
+      run: tar -czvf workdir.tar.gz "${WORKDIR}" "${ADDITIONAL[@]}"
     - name: Artifact workdir
       id: terraform
       uses: actions/upload-artifact@v4
