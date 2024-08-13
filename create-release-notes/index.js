@@ -5,20 +5,26 @@ async function run() {
     const fixVersion = core.getInput("fix-version", { required: true });
     const jiraUsername = core.getInput("jira-username", { required: true });
     const jiraToken = core.getInput("jira-token", { required: true });
-    
+
     const jiraAuthToken = "Basic " + Buffer.from(jiraUsername + ":" + jiraToken).toString("base64");
-    
+    const encodedJql = encodeURIComponent(`fixVersion=${fixVersion} AND "tonic release note[paragraph]" IS NOT EMPTY`);
     const getIssuesFromReleaseResponse = await get(
         "tonic-ai.atlassian.net",
-        `/rest/api/3/search?jql=fixVersion=${fixVersion}`,
+        `/rest/api/3/search?jql=${encodedJql}`,
         jiraAuthToken
     );
 
     const issues = JSON.parse(getIssuesFromReleaseResponse).issues;
-    const customFieldValues = issues.map(issue => issue.fields.customfield_10049).filter(value => value);
-    const releaseNotesAsHtml = customFieldValues
-        .map(fieldData => convertToHtml(fieldData))
-        .join('\n');
+    let releaseNotesAsHtml = "";
+    if(issues && issues.length > 0) {
+        const customFieldValues = issues.map(issue => issue.fields.customfield_10049).filter(value => value);
+        releaseNotesAsHtml = customFieldValues
+            .map(fieldData => convertToHtml(fieldData))
+            .join('\n');
+    } else {
+        releaseNotesAsHtml = "<p>PLACEHOLDER TEXT FOR RELEASE WITH NO NOTES.</p>"
+    }
+    console.log(releaseNotesAsHtml);
 }
 
 function convertToHtml(content) {
@@ -44,7 +50,6 @@ function convertToHtml(content) {
                     if (item.content) traverseContent(item.content);
                     html += '</li>';
                     break;
-                // Add cases for other types if needed
             }
         });
     }
