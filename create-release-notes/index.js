@@ -27,38 +27,89 @@ async function run() {
     console.log(releaseNotesAsHtml);
 }
 
-function convertToHtml(content) {
+function convertToHtml(fieldData) {
     let html = '';
     function traverseContent(contentArray) {
         contentArray.forEach(item => {
             switch (item.type) {
-                case 'paragraph':
-                    html += '<p>';
-                    if (item.content) traverseContent(item.content);
-                    html += '</p>';
-                    break;
                 case 'text':
-                    html += item.text;
+                    if (item.marks) {
+                        item.marks.forEach(mark => {
+                            switch (mark.type) {
+                                case 'code':
+                                    html += '<code>' + item.text + '</code>';
+                                    break;
+                                case 'strong':
+                                    html += '<strong>' + item.text + '</strong>';
+                                    break;
+                                case 'em':
+                                    html += '<em>' + item.text + '</em>';
+                                    break;
+                                case 'underline':
+                                    html += '<u>' + item.text + '</u>';
+                                    break;
+                                case 'strike':
+                                    html += '<s>' + item.text + '</s>';
+                                    break;
+                                case 'link':
+                                    html += '<a href="' + mark.attrs.href + '">' + item.text + '</a>';
+                                    break;
+                                default:
+                                    html += item.text;
+                                    break;
+                            }
+                        });
+                    } else {
+                        html += item.text;
+                    }
+                    break;
+                case 'paragraph':
+                    html += '<p>' + traverseContent(item.content) + '</p>';
                     break;
                 case 'bulletList':
-                    html += '<ul>';
-                    if (item.content) traverseContent(item.content);
-                    html += '</ul>';
+                    html += '<ul>' + traverseContent(item.content) + '</ul>';
+                    break;
+                case 'orderedList':
+                    html += '<ol>' + traverseContent(item.content) + '</ol>';
                     break;
                 case 'listItem':
-                    html += '<li>';
-                    if (item.content) traverseContent(item.content);
-                    html += '</li>';
+                    html += '<li>' + traverseContent(item.content) + '</li>';
+                    break;
+                case 'heading':
+                    const level = item.attrs.level;
+                    html += '<h' + level + '>' + traverseContent(item.content) + '</h' + level + '>';
+                    break;
+                case 'blockquote':
+                    html += '<blockquote>' + traverseContent(item.content) + '</blockquote>';
+                    break;
+                case 'codeBlock':
+                    html += '<pre><code>' + traverseContent(item.content) + '</code></pre>';
+                    break;
+                case 'hardBreak':
+                    html += '<br/>';
+                    break;
+                case 'rule':
+                    html += '<hr/>';
+                    break;
+                case 'image':
+                    html += '<img src="' + item.attrs.src + '" alt="' + (item.attrs.alt || '') + '"/>';
+                    break;
+                default:
+                    if (item.content) {
+                        html += traverseContent(item.content);
+                    }
                     break;
             }
         });
+        
+        return html;
     }
 
-    if (content && content.content) {
-        traverseContent(content.content);
+    if (fieldData && fieldData.content) {
+        return traverseContent(fieldData.content);
     }
 
-    return html;
+    return "";
 }
 
 function get(host, path, authToken) {
