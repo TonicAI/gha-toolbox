@@ -3,13 +3,19 @@ description: 'Creates Jira Release Notes'
 inputs:
     fix-version:
         required: true
-        description: 'Fix version for which to create release notes'
+        description: 'Fix version for which to create release notes. For example: v123'
     jira-username:
         required: true
         description: 'JIRA username for api access.'
     jira-token:
         required: true
         description: 'JIRA user api token.'
+    webflow-token:
+        required: true
+        description: 'Webflow auth token.'
+    product-name:
+        required: true
+        description: 'Name of the product to publish release notes for. Should be structural, ephemeral, or textual.'
 
 runs:
     using: 'node20'
