@@ -1,10 +1,22 @@
 const core = require("@actions/core");
 const https = require("https");
 
+const Products = Object.freeze({
+    structural: 'Structural',
+    textual: 'Textual',
+    ephemeral: 'Ephemeral'
+});
+
 async function run() {
     const fixVersion = core.getInput("fix-version", { required: true });
     const jiraUsername = core.getInput("jira-username", { required: true });
     const jiraToken = core.getInput("jira-token", { required: true });
+    const webflowToken = core.getInput("webflow-token", { required: true });
+    const productName = core.getInput("product-name", { required: true });
+    
+    if (!Object.keys(Products).includes(productName.toLocaleLowerCase())) {
+        throw new Error(`Invalid value for 'productName': ${productName}. Valid options are ${Object.keys(Products).join(', ')}.`);
+    }
 
     const jiraAuthToken = "Basic " + Buffer.from(jiraUsername + ":" + jiraToken).toString("base64");
     const encodedJql = encodeURIComponent(`fixVersion=${fixVersion} AND "tonic release note[paragraph]" IS NOT EMPTY`);
@@ -15,16 +27,17 @@ async function run() {
     );
 
     const issues = JSON.parse(getIssuesFromReleaseResponse).issues;
-    let releaseNotesAsHtml = "";
+    let releaseNotesAsHtml;
     if(issues && issues.length > 0) {
         const customFieldValues = issues.map(issue => issue.fields.customfield_10049).filter(value => value);
         releaseNotesAsHtml = customFieldValues
             .map(fieldData => convertToHtml(fieldData))
             .join('\n');
     } else {
-        releaseNotesAsHtml = "<p>PLACEHOLDER TEXT FOR RELEASE WITH NO NOTES.</p>"
+        releaseNotesAsHtml = "<p>Bug fixes and other internal updates.</p>"
     }
-    console.log(releaseNotesAsHtml);
+    
+    await createReleaseNote(webflowToken, Products[productName], fixVersion, releaseNotesAsHtml);
 }
 
 function convertToHtml(fieldData) {
@@ -112,6 +125,31 @@ function convertToHtml(fieldData) {
     return "";
 }
 
+async function createReleaseNote(webflowToken, product, releaseName, releaseNotesContent) {
+    const webflowAuthToken = `Bearer ${webflowToken}`.toString("base64");
+    const webflowHost = "api.webflow.com";
+    const currentDate = new Date();
+    const body = {
+        cmsLocaleId: "653ad721e882f528b341eaa5",
+        isArchived: false,
+        isDraft: false,
+        fieldData: {
+            "release-date": currentDate,
+            "removed-flag": false,
+            "product": product,
+            "content": releaseNotesContent,
+            "name": releaseName
+        }
+    }
+    const createResponse = JSON.parse(await post(webflowHost, "/v2/sites/62e28cf08913e81176ba2c39/collections/66c653f35fee4b88416da2b2/items", webflowAuthToken, body));
+    const publishBody = {
+        itemIds: [
+            createResponse.id
+        ]
+    }
+    await post(webflowHost, "/v2/collections/66c653f35fee4b88416da2b2/items/publish", webflowAuthToken, publishBody);
+}
+
 function get(host, path, authToken) {
     return new Promise(function (resolve, reject) {
         const getOptions = {
@@ -143,6 +181,40 @@ function get(host, path, authToken) {
         req.on("error", function (err) {
             reject(err);
         });
+        req.end();
+    });
+}
+
+function post(host, path, authToken, payload) {
+    return new Promise(function (resolve, reject) {
+        const postData = JSON.stringify(payload);
+        const postOptions = {
+            host,
+            path,
+            method: "POST",
+            headers: {
+                "Authorization": authToken,
+                "Content-Type": "application/json",
+                "Content-Length": Buffer.byteLength(postData),
+            },
+        };
+
+        const req = https.request(postOptions, function (res) {
+            if (res.statusCode < 200 || res.statusCode >= 300) {
+                return reject(new Error("statusCode=" + res.statusCode));
+            }
+            let body = [];
+            res.on("data", function (chunk) {
+                body.push(chunk);
+            });
+            resolve(body);
+        });
+        req.on("error", function (err) {
+            reject(err);
+        });
+        if (postData) {
+            req.write(postData);
+        }
         req.end();
     });
 }
