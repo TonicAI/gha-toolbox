@@ -34,7 +34,7 @@ async function run() {
     const filteredIssues = issues.filter((i) => i.pull_request.merged_at);
 
     const milestonePrefix = core.getInput("milestone-prefix", { required: false }) || '';
-    const releaseName =milestonePrefix ? `${milestonePrefix}-${milestoneName}` : `${milestoneName}`;
+    const releaseName = milestonePrefix ? `${milestonePrefix}-${milestoneName}` : `${milestoneName}`;
     const releasePayload = {
         data: {
             releaseName: releaseName,
