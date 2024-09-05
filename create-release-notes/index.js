@@ -9,6 +9,7 @@ const Products = Object.freeze({
 
 async function run() {
     const fixVersion = core.getInput("fix-version", { required: true });
+    const fixVersionPrefix = core.getInput("fix-version-prefix", { required: false }) || '';
     const jiraUsername = core.getInput("jira-username", { required: true });
     const jiraToken = core.getInput("jira-token", { required: true });
     const webflowToken = core.getInput("webflow-token", { required: true });
@@ -19,7 +20,8 @@ async function run() {
     }
 
     const jiraAuthToken = "Basic " + Buffer.from(jiraUsername + ":" + jiraToken).toString("base64");
-    const encodedJql = encodeURIComponent(`fixVersion=${fixVersion} AND "tonic release note[paragraph]" IS NOT EMPTY`);
+    const jiraFixVersion = fixVersionPrefix ? `${fixVersionPrefix}-${fixVersion}` : `${fixVersion}`;
+    const encodedJql = encodeURIComponent(`fixVersion=${jiraFixVersion} AND "tonic release note[paragraph]" IS NOT EMPTY`);
     const getIssuesFromReleaseResponse = await get(
         "tonic-ai.atlassian.net",
         `/rest/api/3/search?jql=${encodedJql}`,

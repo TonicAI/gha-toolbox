@@ -16,6 +16,9 @@ inputs:
     product-name:
         required: true
         description: 'Name of the product to publish release notes for. Should be structural, ephemeral, or textual.'
+    fix-version-prefix:
+        required: false
+        description: 'Prefix that was used to create releases in Jira. This should be product name like Textual, Ephemeral etc.'
 
 runs:
     using: 'node20'
