@@ -143,7 +143,7 @@ async function createReleaseNote(webflowToken, product, releaseName, releaseNote
             "name": releaseName
         }
     }
-    const createResponse = JSON.parse(await post(webflowHost, "/v2/sites/62e28cf08913e81176ba2c39/collections/66c653f35fee4b88416da2b2/items", webflowAuthToken, body));
+    const createResponse = await post(webflowHost, "/v2/sites/62e28cf08913e81176ba2c39/collections/66c653f35fee4b88416da2b2/items", webflowAuthToken, body);
     const publishBody = {
         itemIds: [
             createResponse.id
@@ -209,8 +209,17 @@ function post(host, path, authToken, payload) {
             res.on("data", function (chunk) {
                 body.push(chunk);
             });
-            resolve(body);
+
+            res.on("end", function () {
+                try {
+                    const responseBody = Buffer.concat(body).toString();
+                    resolve(JSON.parse(responseBody));
+                } catch (error) {
+                    reject(new Error("Invalid JSON response: " + error.message));
+                }
+            });
         });
+        
         req.on("error", function (err) {
             reject(err);
         });
