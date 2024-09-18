@@ -144,12 +144,19 @@ async function createReleaseNote(webflowToken, product, releaseName, releaseNote
         }
     }
     const createResponse = await post(webflowHost, "/v2/sites/62e28cf08913e81176ba2c39/collections/66c653f35fee4b88416da2b2/items", webflowAuthToken, body);
+    if(createResponse.errors.length > 0) {
+        throw new Error(`Webflow unable to create release notes. Error: ${createResponse.errors}.`);
+    }
+    
     const publishBody = {
         itemIds: [
             createResponse.id
         ]
     }
-    await post(webflowHost, "/v2/collections/66c653f35fee4b88416da2b2/items/publish", webflowAuthToken, publishBody);
+    const publishResponse = await post(webflowHost, "/v2/collections/66c653f35fee4b88416da2b2/items/publish", webflowAuthToken, publishBody);
+    if(publishResponse.errors.length > 0) {
+        throw new Error(`Webflow unable to publish release notes. ItemId: ${createResponse.id}. Error: ${publishResponse.errors}.`);
+    }
 }
 
 function get(host, path, authToken) {
