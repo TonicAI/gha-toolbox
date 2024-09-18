@@ -7,14 +7,14 @@ const Products = Object.freeze({
     ephemeral: 'Ephemeral'
 });
 
-async function run() {
+async function run() {    
     const fixVersion = core.getInput("fix-version", { required: true });
     const fixVersionPrefix = core.getInput("fix-version-prefix", { required: false }) || '';
     const jiraUsername = core.getInput("jira-username", { required: true });
     const jiraToken = core.getInput("jira-token", { required: true });
     const webflowToken = core.getInput("webflow-token", { required: true });
     const productName = core.getInput("product-name", { required: true });
-    
+
     if (!Object.keys(Products).includes(productName.toLocaleLowerCase())) {
         throw new Error(`Invalid value for 'productName': ${productName}. Valid options are ${Object.keys(Products).join(', ')}.`);
     }
@@ -38,7 +38,7 @@ async function run() {
     } else {
         releaseNotesAsHtml = "<p>Bug fixes and other internal updates.</p>"
     }
-    
+
     await createReleaseNote(webflowToken, Products[productName], fixVersion, releaseNotesAsHtml);
 }
 
@@ -155,7 +155,11 @@ async function createReleaseNote(webflowToken, product, releaseName, releaseNote
     }
     const publishResponse = await post(webflowHost, "/v2/collections/66c653f35fee4b88416da2b2/items/publish", webflowAuthToken, publishBody);
     if(publishResponse.errors && publishResponse.errors.length > 0) {
-        throw new Error(`Webflow unable to publish release notes. ItemId: ${createResponse.id}. Error: ${publishResponse.errors}.`);
+        const message = {
+            channel: "marketing-desk",
+            text: `<@U07KZJEFMU6> 🔥🔥🔥 Failed to publish release notes for ${product}, with release name: ${releaseName} and itemId: ${createResponse.id}`, //sends a message to Talia so that notes can be manually published in Weblow
+        };
+        await post("hooks.slack.com", "/services/TA6URB1AS/B038062PFT9/3uxqvAJ7o72G3dFOZ5YfE394", null, message);
     }
 }
 
@@ -194,7 +198,7 @@ function get(host, path, authToken) {
     });
 }
 
-function post(host, path, authToken, payload) {
+function post(host, path, authToken = null, payload) {
     return new Promise(function (resolve, reject) {
         const postData = JSON.stringify(payload);
         const postOptions = {
@@ -218,11 +222,15 @@ function post(host, path, authToken, payload) {
             });
 
             res.on("end", function () {
-                try {
-                    const responseBody = Buffer.concat(body).toString();
-                    resolve(JSON.parse(responseBody));
-                } catch (error) {
-                    reject(new Error("Invalid JSON response: " + error.message));
+                const responseBody = Buffer.concat(body).toString();
+                const contentType = res.headers['content-type'];
+
+                if (contentType && contentType.includes("application/json")) {
+                    try {
+                        resolve(JSON.parse(responseBody));
+                    } catch (error) {
+                        reject(new Error("Invalid JSON response: " + error.message));
+                    }
                 }
             });
         });
