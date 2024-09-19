@@ -10,6 +10,11 @@ async function run() {
         return;
     }
 
+    const targetBranch = pullRequest.base.ref;
+    if (targetBranch !== "master" || targetBranch !== "main") {
+        console.log("PR is not targeting the master or main branch");
+    }
+
     const { milestone, number: prNumber } = pullRequest;
 
     if (milestone) {
