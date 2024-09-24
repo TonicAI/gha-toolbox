@@ -11,7 +11,7 @@ async function run() {
     }
 
     const targetBranch = pullRequest.base.ref;
-    if (targetBranch !== "master" || targetBranch !== "main") {
+    if (targetBranch !== "master" && targetBranch !== "main") {
         console.log("PR is not targeting the master or main branch, milestone will not be added.");
         return;
     }
