@@ -1,0 +1,22 @@
+name: minijinja/setup
+description: Installs minijinja-cli
+inputs:
+  version:
+    default: latest
+    description: Version of minijinja-cli to install
+runs:
+  using: "composite"
+  steps:
+    - env:
+        CARGO_HOME: ${{ github.action_path }}
+        VERSION: ${{ inputs.version }}
+      shell: bash
+      run: |
+        #@begin=bash@
+        if ! command -v minijinja &>/dev/null; then
+          echo "Installing minijinja"
+          mkdir -p ${CARGO_HOME}/bin
+          curl -sSfL https://github.com/mitsuhiko/minijinja/releases/${VERSION}/download/minijinja-cli-installer.sh | sh
+          echo "${CARGO_HOME}/bin" >> $GITHUB_PATH
+        fi
+        #@end=bash@

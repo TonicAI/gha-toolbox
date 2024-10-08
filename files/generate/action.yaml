@@ -14,6 +14,11 @@ inputs:
     required: false
     description: "Set to true to append to file if it exists already"
     default: "false"
+  touch:
+    required: false
+    description: |
+      Touch file before writing, creates directory path. Default is "true"
+    default: "true"
 outputs:
   filepath:
     description: Absolute path to the generated file
