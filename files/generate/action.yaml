@@ -19,6 +19,10 @@ inputs:
     description: |
       Touch file before writing, creates directory path. Default is "true"
     default: "true"
+  filemode:
+    required: false
+    description: "Octal file mode"
+    default: "644"
 outputs:
   filepath:
     description: Absolute path to the generated file
