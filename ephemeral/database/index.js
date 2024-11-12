@@ -17,6 +17,7 @@ const connectionInformation = database => {
     databaseName: database.databaseName,
     user: database.databaseUserName,
     password: database.databasePassword,
+    json: database,
   }
 };
 
@@ -104,8 +105,10 @@ async function runCreate(client, name) {
   core.setOutput("host", connection.host);
   core.setOutput("port", connection.port);
   core.setOutput("username", connection.username);
+  core.setSecret(connection.password)
   core.setOutput("password", connection.password);
   core.setOutput("database", connection.databaseName);
+  core.setOutput("json", connection.json);
 }
 
 async function main() {
