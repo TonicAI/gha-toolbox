@@ -18,4 +18,5 @@ runs:
           echo "contents<<${EOF}"
           cat ${READPATH}
           echo "${EOF}"
+        } >> $GITHUB_OUTPUT
         #@end=bash@
