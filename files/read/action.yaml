@@ -18,9 +18,10 @@ runs:
       run: |
         #@begin=bash@
         EOF=$(uuidgen)
+        CONTENTS=$(< ${READPATH})
         {
           echo "content<<${EOF}"
-          cat ${READPATH}
+          echo "${CONTENTS}"
           echo "${EOF}"
         } >> $GITHUB_OUTPUT
         #@end=bash@
