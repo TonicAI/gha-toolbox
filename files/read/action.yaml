@@ -4,6 +4,10 @@ inputs:
   filepath:
     required: true
     description: File path to read
+outputs:
+  content:
+    value: ${{ steps.read.outputs.content }}
+    description: Contents of filepath
 runs:
   using: composite
   steps:
@@ -15,7 +19,7 @@ runs:
         #@begin=bash@
         EOF=$(uuidgen)
         {
-          echo "contents<<${EOF}"
+          echo "content<<${EOF}"
           cat ${READPATH}
           echo "${EOF}"
         } >> $GITHUB_OUTPUT
