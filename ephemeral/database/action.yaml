@@ -25,6 +25,8 @@ outputs:
     description: Database password
   database:
     description: Logical database name
+  json:
+    description: Get database JSON response
 runs:
   using: node20
   main: index.js
