@@ -101,6 +101,8 @@ async function runCreate(client, name) {
   database = await client.waitForStart(database);
   const connection = connectionInformation(database);
 
+  core.setSecret(connection.password);
+  core.setOutput("json", JSON.stringify(database));
   core.setOutput("host", connection.host);
   core.setOutput("port", connection.port);
   core.setOutput("username", connection.username);

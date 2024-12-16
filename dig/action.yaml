@@ -1,0 +1,59 @@
+name: Dig
+description: |
+  Returns new line separated host:ip-addr for each host passed, only the first
+  ip address is returned
+inputs:
+  domains:
+    required: true
+    description: |
+      New line separated domains to look up. This action will also accept URIs
+      that includes protocol, paths, and user@pass, e.g
+      https://user:pass@www.example.com/path will look up www.example.com
+  name-server:
+    description: Name server to use, if not provided system default is used
+outputs:
+  resolution:
+    description: New line separated host:ip-addr
+    value: ${{ steps.dig.outputs.resolution }}
+runs:
+  using: composite
+  steps:
+    - id: dig
+      shell: bash
+      env:
+        DOMAINS: ${{ inputs.domains }}
+        NS: ${{ inputs.name-server }}
+      run: |
+        #@begin=bash@
+        #fragile, be careful
+        COMMENT_PATTERN="^ *#"
+        RESOLUTION=""
+        DIG="dig"
+        if [ ! -z "${NS}" ]; then
+          DIG="${DIG} @${NS}"
+        fi
+        while IFS= read -r line || [[ -n $line ]]; do
+          if [ -z "${line}" ] || [[ $line =~ $COMMENT_PATTERN ]]; then
+            continue
+          fi
+
+          HOST=$( echo "${line}" | sed -e 's|^.*://||' \
+            -e 's|/.*$||' \
+            -e 's|:.*$||' \
+            -e 's|^.*@||' )
+
+          if [ -z "${HOST}" ]; then
+            continue
+          fi
+
+          IP_ADDR=$($DIG $HOST +short | head -n1)
+          printf -v RESOLUTION '%s\n%s' "$RESOLUTION" "${HOST}:${IP_ADDR}"
+        done < <(printf '%s' "${DOMAINS}")
+
+        EOF=$(uuidgen)
+        {
+          echo "resolution<<${EOF}"
+          echo "${RESOLUTION}"
+          echo "${EOF}"
+        } >> $GITHUB_OUTPUT
+        #@end=bash@

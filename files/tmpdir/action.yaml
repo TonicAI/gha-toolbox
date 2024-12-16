@@ -1,0 +1,16 @@
+name: tmpdir
+description: creates a temporary directory that is deleted at the end of the job
+inputs:
+  name:
+    description: name of the directory
+    required: true
+  path:
+    description: base path for the directory, defaults to runner temp directory
+    default: ${{ runner.temp }}
+outputs:
+  path:
+    description: Path to the created directory
+runs:
+  using: node20
+  main: main.js
+  post: main.js

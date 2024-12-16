@@ -1,0 +1,54 @@
+name: Pass secret value
+description: Handles passing secret values between workflows
+inputs:
+  key:
+    description: Encryption key
+    required: true
+  value:
+    description: Value to pass
+    required: true
+  mode:
+    description: Either "encrypt" or "decrypt"
+    required: true
+outputs:
+  encrypted:
+    description: Set when mode is "encrypt"
+    value: ${{ steps.encrypt.outputs.value }}
+  decrypted:
+    description: Set when mode is "decrypt"
+    value: ${{ steps.decrypt.outputs.value }}
+runs:
+  using: composite
+  steps:
+    - id: encrypt
+      if: ${{ inputs.mode == 'encrypt' }}
+      shell: bash
+      env:
+        VALUE: ${{ inputs.value }}
+        KEY: ${{ inputs.key }}
+      run: |
+        #@begin=bash@
+        ENCRYPTED=$(echo -n "${VALUE}" | openssl enc -aes-256-cbc -pbkdf2 -salt -k "${KEY}" | base64)
+        EOF=$(uuidgen)
+        {
+          echo "value<<${EOF}"
+          echo "${ENCRYPTED}"
+          echo "${EOF}"
+        } >> $GITHUB_OUTPUT
+        #@end=bash@
+    - id: decrypt
+      if: ${{ inputs.mode == 'decrypt' }}
+      shell: bash
+      env:
+        VALUE: ${{ inputs.value }}
+        KEY: ${{ inputs.key }}
+      run: |
+        #@begin=bash@
+        DECRYPTED=$(echo -n "${VALUE}" | base64 --decode | openssl enc -d -aes-256-cbc -pbkdf2 -salt -k "${KEY}")
+        EOF=$(uuidgen)
+        {
+          echo "value<<${EOF}"
+          echo "${DECRYPTED}"
+          echo "${EOF}"
+        } >> $GITHUB_OUTPUT
+        #@end=bash@

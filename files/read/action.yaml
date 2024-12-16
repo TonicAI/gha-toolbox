@@ -1,0 +1,27 @@
+name: Read file
+description: Reads a file to github output
+inputs:
+  filepath:
+    required: true
+    description: File path to read
+outputs:
+  content:
+    value: ${{ steps.read.outputs.content }}
+    description: Contents of filepath
+runs:
+  using: composite
+  steps:
+    - id: read
+      shell: bash
+      env:
+        READPATH: ${{ inputs.filepath }}
+      run: |
+        #@begin=bash@
+        EOF=$(uuidgen)
+        CONTENTS=$(< ${READPATH})
+        {
+          echo "content<<${EOF}"
+          echo "${CONTENTS}"
+          echo "${EOF}"
+        } >> $GITHUB_OUTPUT
+        #@end=bash@
