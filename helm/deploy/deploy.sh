@@ -59,9 +59,10 @@ fi
 
 echo "action=${ACTION}" >> $GITHUB_OUTPUT
 
-set +ex
-helm upgrade --install "${NAME}" "${CHART}" ${HELM_ARGS}
+set +e
 set -x
+helm upgrade --install "${NAME}" "${CHART}" ${HELM_ARGS}
+set +x
 EC=$?
 set -e
 
