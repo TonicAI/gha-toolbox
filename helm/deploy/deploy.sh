@@ -62,7 +62,9 @@ echo "action=${ACTION}" >> $GITHUB_OUTPUT
 set +e
 set -x
 helm upgrade --install "${NAME}" "${CHART}" ${HELM_ARGS}
-set +x
+if [ -z "${CI_DEBUG}" ]; then
+    set +x
+fi
 EC=$?
 set -e
 
