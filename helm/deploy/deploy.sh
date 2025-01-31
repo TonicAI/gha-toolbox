@@ -66,6 +66,7 @@ if [ -z "${CI_DEBUG}" ]; then
     set +x
 fi
 EC=$?
+echo "Helm Exit Code: ${EC}"
 set -e
 
 if [ ! -z "${CI_DEBUG}" ]; then
