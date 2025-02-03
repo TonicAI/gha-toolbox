@@ -1,0 +1,13 @@
+name: text/blob
+description: Use it like a multiline string variable
+inputs:
+  content:
+    required: true
+    description: the text
+outputs:
+  content:
+    description: the text
+    value: ${{ inputs.content }}
+runs:
+  using: composite
+  steps: []
