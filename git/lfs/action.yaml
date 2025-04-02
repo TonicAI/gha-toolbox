@@ -38,6 +38,7 @@ runs:
         key: ${{ runner.os }}-${{ inputs.cache-key }}-${{ hashFiles('.lfs-assets-id') }}
         restore-keys: ${{ runner.os }}-${{ inputs.cache-key }}-
     - name: Print LFS cache
+      shell: bash
       run: |
         echo "LFS cache: $(cat .lfs-assets-id)"
     - shell: bash
