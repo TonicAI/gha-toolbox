@@ -27,14 +27,15 @@ class EphemeralClient {
 
   async byName(name) {
     const resp = await this.http.get(`?filters[0].key=name&filters[0].value=${name}`);
-
-    switch (resp.data.totalRecords) {
+    const record = resp.data.records.filter((record) => record.name === name);
+    
+    switch (record.length) {
       case 0:
         return {exists: false}
       case 1:
-        return {exists: true, ...resp.data.records[0]}
+        return {exists: true, ...record[0]}
       default:
-        throw new Error(`Expected 0 or 1 databases named ${name} but got ${resp.data.totalRecords}`);
+        throw new Error(`Expected 0 or 1 databases named ${name} but got ${record.length}`);
     }
   }
 
