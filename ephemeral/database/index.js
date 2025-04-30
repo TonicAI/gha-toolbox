@@ -27,7 +27,7 @@ class EphemeralClient {
 
   async byName(name) {
     const resp = await this.http.get(`?filters[0].key=name&filters[0].value=${name}`);
-    const record = resp.data.records.filter((record) => record.name.toLocaleLowerCase() === name.toLocaleLowerCase());
+    const record = resp.data.records.filter((record) => record.name.toLowerCase() === name.toLowerCase());
     
     switch (record.length) {
       case 0:
