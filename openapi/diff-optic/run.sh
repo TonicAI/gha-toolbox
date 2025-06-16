@@ -5,12 +5,13 @@ echo "🔍 Checking for API breaking changes..."
 
 npm install -g @useoptic/optic
 
-if ! optic \
-    diff \
-    "${OPENAPI_URI_ORIGINAL}" \
-    "${OPENAPI_URI_UPDATED}" \
-    --standard "${GITHUB_WORKSPACE}/.optic/optic.yml" \
-    --severity error 2>/dev/null; then
+OPTIC_ARGS="diff ${OPENAPI_URI_ORIGINAL} ${OPENAPI_URI_UPDATED}"
+
+if [ -n "${OPTIC_YAML_PATH}" ]; then
+    OPTIC_ARGS="${OPTIC_ARGS} --standard ${OPTIC_YAML_PATH}"
+fi
+
+if ! optic "${OPTIC_ARGS}" --severity error 2>/dev/null; then
     echo "❌ Breaking API changes detected!"
     BREAKING_CHANGES=true
 else
