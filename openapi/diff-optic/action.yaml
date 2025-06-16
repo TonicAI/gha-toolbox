@@ -14,7 +14,7 @@ runs:
   using: composite
   steps:
     - shell: bash
-      run: ./run.sh
+      run: ${{ github.action_path }}/run.sh
       env: 
         OPENAPI_URI_ORIGINAL: ${{ inputs.openapi-uri-original }}
         OPENAPI_URI_UPDATED: ${{ inputs.openapi-uri-updated }}
