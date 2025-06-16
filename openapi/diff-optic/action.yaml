@@ -1,0 +1,17 @@
+name: Compare OpenAPI specs
+inputs:
+  openapi-uri-original:
+    description: URI (file or URL) to the original OpenAPI spec ("before")
+    required: true
+  openapi-uri-updated:
+    description: URI (file or URL) to the updated OpenAPI spec ("after")
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: ./run.sh
+      env: 
+        OPENAPI_URI_ORIGINAL: ${{ inputs.openapi-uri-original }}
+        OPENAPI_URI_UPDATED: ${{ inputs.openapi-uri-updated }}
