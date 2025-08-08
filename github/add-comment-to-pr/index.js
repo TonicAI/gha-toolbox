@@ -4,7 +4,7 @@ const github = require("@actions/github");
 async function run() {
     const token = core.getInput("repo-token", { required: true });
     const prNumbers = core.getInput("pr-numbers", { required: true });
-    const commentTest = core.getInput("comment-text", { required: true });
+    const commentText = core.getInput("comment-text", { required: true });
     const client = new github.getOctokit(token);
 
     var prNums = prNumbers.split(" ");
@@ -14,7 +14,7 @@ async function run() {
             repo: github.context.payload.repository.name,
             owner: github.context.payload.repository.owner.login,
             issue_number: prNumber,
-            body: commentTest,
+            body: commentText,
         });
     }
 }
