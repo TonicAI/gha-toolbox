@@ -27,6 +27,14 @@ inputs:
     description: If a previous installation failed, remove it or roll it back
     required: false
     default: "true"
+  dry-run:
+    description: Set to true to cause a dry-run
+  debug:
+    description: |
+      Set to true to output debug logs. Running this action with debug logging
+      enabled at the run level will also output debug logs.
+  artifact-manifest:
+    description: Set to "true" (default) to artifact the resulting manifest.
 outputs:
   action:
     value: ${{ steps.deploy.outputs.action }}
@@ -58,9 +66,11 @@ runs:
         HELM_TIMEOUT: ${{ inputs.helm-timeout }}
         REMOVE_FAILED: ${{ inputs.remove-failed }}
         ACTION_PATH: ${{ github.action_path }}
+        DRY_RUN: ${{ inputs.dry-run }}
+        DEBUG: ${{ inputs.debug }}
       run: ${{ github.action_path }}/deploy.sh
     - uses: actions/upload-artifact@v4
-      if: always() && steps.deploy.outputs.full-manifest != ''
+      if: always() && inputs.artifact-manifest == 'true' && steps.deploy.outputs.full-manifest != ''
       with:
         name: full-manifest.yaml
         path: ${{ steps.deploy.outputs.full-manifest }}
