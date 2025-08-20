@@ -72,17 +72,43 @@ if [ -n "${STATUS}" ]; then
   ACTION="upgrade"
 fi
 
-echo "action=${ACTION}" >> $GITHUB_OUTPUT
+echo "action=${ACTION}" | tee -a "${GITHUB_OUTPUT}"
 
 set +e
 set -x
 helm upgrade --install "${NAME}" "${CHART}" ${HELM_ARGS}
 EC=$?
-set +x
 set -e
 
-if [ -f "full-manifest.yaml" ]; then
-  echo "full-manifest=$(readlink -e full-manifest.yaml)" >> $GITHUB_OUTPUT
+if [ "${DEBUG,,}" != "true" ]; then
+  set +x
 fi
+
+if [ -f "full-manifest.yaml" ]; then
+  echo "full-manifest=$(readlink -e full-manifest.yaml)" | tee -a "${GITHUB_OUTPUT}"
+fi
+
+LATEST=$(helm get metadata -n "${NAMESPACE}" "${NAME}" -ojson)
+
+function latest-output() {
+  local OUTPUT="${1}"
+  local SELECTOR="${2}"
+  local -r EOF="$(uuidgen)"
+  echo "${OUTPUT}<<${EOF}"
+  echo "${LATEST}" | jq -rMc "${SELECTOR}"
+  echo "${EOF}"
+}
+
+{
+  latest-output 'json' '.'
+  latest-output 'app-version' '.appVersion'
+  latest-output 'chart-name' '.chart'
+  latest-output 'chart-version' '.version'
+  latest-output 'deployed-at' '.deployedAt'
+  latest-output 'install-name' '.name'
+  latest-output 'namespace' '.namespace'
+  latest-output 'revision' '.revision'
+  latest-output 'status' '.status'
+} | tee -a "${GITHUB_OUTPUT}"
 
 exit $EC

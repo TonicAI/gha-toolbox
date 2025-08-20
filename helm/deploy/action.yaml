@@ -35,6 +35,10 @@ inputs:
       enabled at the run level will also output debug logs.
   artifact-manifest:
     description: Set to "true" (default) to artifact the resulting manifest.
+    default: "true"
+  manifest-artifact-name:
+    description: The name of the artifact for the full manifest
+    default: full-manifest.yaml
 outputs:
   action:
     value: ${{ steps.deploy.outputs.action }}
@@ -42,6 +46,33 @@ outputs:
   values-file:
     value: ${{ steps.values.outputs.filepath }}
     description: Filepath to generated values.yaml file if provided
+  status-json:
+    value: ${{ steps.deploy.outputs.json }}
+    description: JSON body of the latest helm installation metadata
+  app-version:
+    value: ${{ steps.deploy.outputs.app-version }}
+    description: Value from latest helm installation metadata
+  chart-name:
+    value: ${{ steps.deploy.outputs.chart-name }}
+    description: Value from latest helm installation metadata
+  chart-version:
+    value: ${{ steps.deploy.outputs.chart-version }}
+    description: Value from latest helm installation metadata
+  deployed-at:
+    value: ${{ steps.deploy.outputs.deployed-at }}
+    description: Value from latest helm installation metadata
+  install-name:
+    value: ${{ steps.deploy.outputs.install-name }}
+    description: Value from latest helm installation metadata
+  namespace:
+    value: ${{ steps.deploy.outputs.namespace }}
+    description: Value from latest helm installation metadata
+  revision:
+    value: ${{ steps.deploy.outputs.revision }}
+    description: Value from latest helm installation metadata
+  status:
+    value: ${{ steps.deploy.outputs.status }}
+    description: Value from latest helm installation metadata
 
 runs:
   using: composite
@@ -72,5 +103,5 @@ runs:
     - uses: actions/upload-artifact@v4
       if: always() && inputs.artifact-manifest == 'true' && steps.deploy.outputs.full-manifest != ''
       with:
-        name: full-manifest.yaml
+        name: ${{ inputs.manifest-artifact-name }}
         path: ${{ steps.deploy.outputs.full-manifest }}

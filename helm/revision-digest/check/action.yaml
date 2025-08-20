@@ -1,0 +1,70 @@
+name: Check revision digest
+description: Checks if the latest helm revision has a particular digest annotation
+inputs:
+  digest:
+    required: true
+    description: Digest to match against
+  namespace:
+    required: true
+    description: Namespace the helm release is installed in
+  helm-installation:
+    required: true
+    description: Name of helm chart installation
+outputs:
+  is-deployed-digest:
+    description: |
+      "true" if the latest revision matches the provided digest, "false"
+      otherwise
+    value: ${{ steps.check.outputs.is-deployed-digest }}
+  deployed-digest:
+    description: Digest of deployed revision (if present)
+    value: ${{ steps.check.outputs.deployed-digest }}
+  latest-revision:
+    description: Latest revision number (if present)
+    value: ${{ steps.check.outputs.latest-revision }}
+runs:
+  using: composite
+  steps:
+    - id: check
+      env:
+        PROVIDED_DIGEST: ${{ inputs.digest }}
+        HELM_NAMESPACE: ${{ inputs.namespace }}
+        HELM_INSTALLATION: ${{ inputs.helm-installation }}
+        CI_DEBUG: ${{ runner.debug }}
+      shell: bash
+      run: |
+        #@begin=bash@
+        set -euo pipefail
+        CI_DEBUG="${CI_DEBUG:-}"
+        if [ -n "${CI_DEBUG}" ]; then
+          set -x
+        fi
+
+        set +e
+        HELM_LATEST_REVISION=$(helm -n "${HELM_NAMESPACE}" get metadata "${HELM_INSTALLATION}" -ojson)
+        HELM_REVISION_VERSION_EC=$?
+        if [ $HELM_REVISION_VERSION_EC -ne 0 ]; then
+          echo "is-deployed-digest=false" | tee -a "${GITHUB_OUTPUT}"
+          exit 0
+        fi
+        HELM_REVISION_VERSION=$(echo "${HELM_LATEST_REVISION}" | jq -rM '.revision')
+        set -e
+
+        REVISION_SECRET_NAME="sh.helm.release.v1.${HELM_INSTALLATION}.v${HELM_REVISION_VERSION}"
+        REVISION_ANNOTATIONS=$(kubectl -n "${HELM_NAMESPACE}" get secret "${REVISION_SECRET_NAME}" -o jsonpath='{.metadata.annotations}')
+        REVISION_DIGEST=$(echo "${REVISION_ANNOTATIONS}" | jq -rM '."helm.tonic.ai/revision-digest"')
+
+        if [ "${REVISION_DIGEST}" == "null" ]; then
+          REVISION_DIGEST=""
+        fi
+
+        IS_DEPLOYED_DIGEST="false"
+        if [ "${REVISION_DIGEST}" == "${PROVIDED_DIGEST}" ]; then
+          IS_DEPLOYED_DIGEST="true"
+        fi
+
+        {
+          echo "is-deployed-digest=${IS_DEPLOYED_DIGEST}"
+          echo "deployed-digest=${REVISION_DIGEST}"
+          echo "latest-revision=${HELM_REVISION_VERSION}"
+        } | tee -a "${GITHUB_OUTPUT}"
