@@ -33,6 +33,7 @@ runs:
         if [ -n "${CI_DEBUG:-}" ]; then
           set -x
         fi
+        pwd
         dotnet tool restore
 
         MIGRATIONS=$(dotnet ef migrations list)
