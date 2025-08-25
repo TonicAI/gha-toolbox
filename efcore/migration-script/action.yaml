@@ -1,7 +1,7 @@
 name: Create migration script
 description: Creates a SQL migration script between two migrations
 inputs:
-  migrations-dir:
+  migrations-project:
     required: true
     description: Path to migration directory, relative to `inputs.git-directory`
   beginning:
@@ -22,7 +22,7 @@ runs:
   steps:
     - id: generate
       shell: bash
-      working-directory: ${{ inputs.migrations-dir }}
+      working-directory: ${{ inputs.migrations-project }}
       env:
         BEGINNING: ${{ inputs.beginning }}
         ENDING: ${{ inputs.ending }}
