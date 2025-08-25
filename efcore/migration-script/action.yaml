@@ -27,10 +27,11 @@ runs:
         BEGINNING: ${{ inputs.beginning }}
         ENDING: ${{ inputs.ending }}
         OUTPUT_PATH: ${{ inputs.file-path }}
+        CI_DEBUG: ${{ runner.debug }}
       run: |
         #@begin=bash@
         if [ -n "${CI_DEBUG:-}" ]; then
-          set +x
+          set -x
         fi
         dotnet tool restore
 
