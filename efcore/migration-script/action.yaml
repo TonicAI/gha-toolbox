@@ -1,0 +1,47 @@
+name: Create migration script
+description: Creates a SQL migration script between two migrations
+inputs:
+  migrations-dir:
+    required: true
+    description: Path to migration directory, relative to `inputs.git-directory`
+  beginning:
+    required: true
+    description: Name of migration that inclusively begins the range
+  ending:
+    required: true
+    description: Name of migration that inclusively ends the range
+  file-path:
+    required: true
+    description: File path to output script
+outputs:
+  file-path:
+    value: ${{ steps.generate.outputs.file-path }}
+    description: Absolute path to migration script
+runs:
+  using: composite
+  steps:
+    - id: generate
+      shell: bash
+      working-directory: ${{ inputs.migrations-dir }}
+      env:
+        BEGINNING: ${{ inputs.beginning }}
+        ENDING: ${{ inputs.ending }}
+        OUTPUT_PATH: ${{ inputs.file-path }}
+      run: |
+        #@begin=bash@
+        dotnet tool restore
+
+        FROM_MIGRATION=$(dotnet ef migrations list \
+          | grep -B 1 "$BEGINNING" \
+          | head -n 1 \
+          | awk '{print $1}')
+
+        TO_MIGRATION="$ENDING"
+
+        dotnet ef migrations script "$FROM_MIGRATION" "$TO_MIGRATION" --no-build --prefix-output \
+          | awk '$1 == "data:" { $1=""; sub(/^ /, ""); print }' \
+          | sed 's/^\s*$/;/' \
+          > "${OUTPUT_PATH}"
+
+        echo "file-path=$(realpath -e "${OUTPUT_PATH}")" | tee -a "${GITHUB_OUTPUT}"
+        #@end=bash@
