@@ -29,6 +29,9 @@ runs:
         OUTPUT_PATH: ${{ inputs.file-path }}
       run: |
         #@begin=bash@
+        if [ -n "${CI_DEBUG:-}" ]; then
+          set +x
+        fi
         dotnet tool restore
 
         FROM_MIGRATION=$(dotnet ef migrations list \
