@@ -35,6 +35,9 @@ runs:
         ENDING: ${{ inputs.ending }}
       run: |
         #@begin=bash@
+        if [ -n "${CI_DEBUG:-}" ]; then
+          set -x
+        fi
         set -e
         # Get list of added files between the versions in the migration dir
         NEW_MIGRATIONS=$(git diff --name-status \
