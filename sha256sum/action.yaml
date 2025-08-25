@@ -1,0 +1,31 @@
+name: sha256sum
+description: Generates a sha256 checksum from inputs
+inputs:
+  content:
+    description: |
+      Content for checksum. This is hashed as is including any leading and
+      trailing whitespace and new lines.
+    required: false
+  files:
+    description: New line separated files for checksum
+    required: false
+outputs:
+  sha256sum:
+    description: |
+      sha256sum of all inputs. A single input produces the same sha256 as it
+      would alone. Otherwise, each input is hashed and these hashes are
+      combined to produce a final hash. `input.content` (if nonempty) is prepended
+      and then file hashes are added in the same order listed. If no inputs are
+      produced, then the output is the sha256 hash of an empty string.
+      Empty lines in `input.files` are skipped.
+    value: ${{ steps.sha256sum.outputs.sha256sum }}
+runs:
+  using: composite
+  steps:
+    - id: sha256sum
+      env:
+        CONTENT: ${{ inputs.content }}
+        FILES: ${{ inputs.files }}
+        CI_DEBUG: ${{ runner.debug }}
+      shell: bash
+      run: ${GITHUB_ACTION_PATH}/checksum.sh

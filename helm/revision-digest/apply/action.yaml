@@ -1,0 +1,41 @@
+name: Apply Helm Revision Digest
+description: Applies a digest to a helm revision
+inputs:
+  digest:
+    required: true
+    description: Digest to apply to revision
+  namespace:
+    required: true
+    description: Namespace the helm release is installed in
+  helm-installation:
+    required: true
+    description: Name of helm chart installation
+  helm-revision:
+    description: |
+      Helm installation revision. If not provided then the latest revision is
+      annotated.
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        REVISION_DIGEST: ${{ inputs.digest }}
+        HELM_NAMESPACE: ${{ inputs.namespace }}
+        HELM_INSTALLATION: ${{ inputs.helm-installation }}
+        HELM_REVISION_VERSION: ${{ inputs.helm-revision }}
+        CI_DEBUG: ${{ runner.debug }}
+      run: |
+        #@begin=bash@
+        set -euo pipefail
+        CI_DEBUG="${CI_DEBUG:-}"
+        if [ -n "${CI_DEBUG}" ]; then
+          set -x
+        fi
+        if [ -z "${HELM_REVISION_VERSION}" ]; then
+          HELM_LATEST_REVISION=$(helm -n "${HELM_NAMESPACE}" get metadata "${HELM_INSTALLATION}" -ojson)
+          HELM_REVISION_VERSION=$(echo "${HELM_LATEST_REVISION}" | jq -rM '.revision')
+        fi
+
+        REVISION_SECRET_NAME="sh.helm.release.v1.${HELM_INSTALLATION}.v${HELM_REVISION_VERSION}"
+        DIGEST_ANNOTATION="helm.tonic.ai/revision-digest=${REVISION_DIGEST}"
+        kubectl annotate -n "${HELM_NAMESPACE}" --overwrite secret "${REVISION_SECRET_NAME}" "${DIGEST_ANNOTATION}"
