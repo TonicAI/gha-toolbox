@@ -1,0 +1,61 @@
+name: Create migration script
+description: Creates a SQL migration script between two migrations
+inputs:
+  migrations-project:
+    required: true
+    description: Path to migration directory, relative to `inputs.git-directory`
+  beginning:
+    required: true
+    description: Name of migration that inclusively begins the range
+  ending:
+    required: true
+    description: Name of migration that inclusively ends the range
+  file-path:
+    required: true
+    description: File path to output script
+  restore-tool:
+    required: false
+    description: Set to `true` to restore tools
+  debug:
+    description: Set to enable debug logging
+outputs:
+  file-path:
+    value: ${{ steps.generate.outputs.file-path }}
+    description: Absolute path to migration script
+runs:
+  using: composite
+  steps:
+    - id: generate
+      shell: bash
+      env:
+        BEGINNING: ${{ inputs.beginning }}
+        ENDING: ${{ inputs.ending }}
+        OUTPUT_PATH: ${{ inputs.file-path }}
+        DEBUG: ${{ inputs.debug || runner.debug }}
+        RESTORE_TOOL: ${{ inputs.restore-tool }}
+        MIGRATIONS_PROJECT: ${{ inputs.migrations-project }}
+      run: |
+        #@begin=bash@
+        if [ -n "${DEBUG:-}" ]; then
+          set -x
+        fi
+        pwd
+        if [ "${RESTORE_TOOL,,}" == "true" ]; then
+          dotnet tool restore
+        fi
+
+        MIGRATIONS=$(dotnet ef migrations list --project "${MIGRATIONS_PROJECT}")
+        FROM_MIGRATION=$(echo "${MIGRATIONS}" \
+          | grep -B 1 "$BEGINNING" \
+          | head -n 1 \
+          | awk '{print $1}')
+
+        TO_MIGRATION="$ENDING"
+
+        dotnet ef migrations script "$FROM_MIGRATION" "$TO_MIGRATION" --no-build --prefix-output --project "${MIGRATIONS_PROJECT}" \
+          | awk '$1 == "data:" { $1=""; sub(/^ /, ""); print }' \
+          | sed 's/^\s*$/;/' \
+          > "${OUTPUT_PATH}"
+
+        echo "file-path=$(realpath -e "${OUTPUT_PATH}")" | tee -a "${GITHUB_OUTPUT}"
+        #@end=bash@

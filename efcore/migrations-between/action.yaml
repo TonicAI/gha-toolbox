@@ -1,0 +1,66 @@
+name: Find Migrations
+description: Finds migrations between two git commit-ish values
+inputs:
+  migrations-dir:
+    required: true
+    description: Path to migration directory, relative to `inputs.git-directory`
+  beginning:
+    required: true
+    description: The beginning of the git commitish range to find migrations
+  ending:
+    required: true
+    description: The ending of the git commitish range to find migrations
+  git-directory:
+    required: false
+    description: Set to use a repository directory other than the default
+outputs:
+  beginning:
+    description: Name of first migration
+    value: ${{ steps.migrations.outputs.first }}
+  ending:
+    description: Name of last migration
+    value: ${{ steps.migrations.outputs.last }}
+  all:
+    description: New line separated list of migration file names
+    value: ${{ steps.migrations.outputs.all }}
+runs:
+  using: composite
+  steps:
+    - id: migrations
+      working-directory: ${{ inputs.git-directory }}
+      shell: bash
+      env:
+        MIGRATION_DIR: ${{ inputs.migrations-dir }}
+        BEGINNING: ${{ inputs.beginning }}
+        ENDING: ${{ inputs.ending }}
+      run: |
+        #@begin=bash@
+        if [ -n "${CI_DEBUG:-}" ]; then
+          set -x
+        fi
+        set -e
+        # Get list of added files between the versions in the migration dir
+        NEW_MIGRATIONS=$(git diff --name-status \
+          "$BEGINNING" "$ENDING" -- "$MIGRATION_DIR" \
+          | awk '$1 == "A" { print $2 }' \
+          | sed -E 's#.*/([0-9]{14}_[A-Za-z0-9]+)\.([^.]+)?(\.cs)?#\1#' \
+          | sort | uniq)
+
+        if [ -z "$NEW_MIGRATIONS" ]; then
+          echo "No migrations found between versions"
+          exit 0
+        fi
+
+        # Output first file (lexicographically), since migrations are named with timestamp
+        FIRST_MIGRATION=$(echo "$NEW_MIGRATIONS" | head -n 1)
+        LAST_MIGRATION=$(echo "$NEW_MIGRATIONS" | tail -n 1)
+
+        {
+          echo "first=${FIRST_MIGRATION}"
+          echo "last=${LAST_MIGRATION}"
+          EOF=$(uuidgen)
+          echo "all<<${EOF}"
+          echo "${NEW_MIGRATIONS}"
+          echo "${EOF}"
+        } | tee -a "${GITHUB_OUTPUT}"
+        #@end=bash@
