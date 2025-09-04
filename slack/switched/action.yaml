@@ -1,0 +1,38 @@
+name: slack/switched
+description: |
+  If `switch-on` is present as a key in `payloads` then that payload is
+  selected to send to the specified slack webhook.
+inputs:
+  switch-on:
+    required: true
+    description: Value to step on
+  webhook:
+    required: true
+    description: Slack webhook to send selected message to
+  payloads:
+    required: true
+    description: Potential payloads to select from
+runs:
+  using: composite
+  steps:
+    - id: selection
+      uses: tonicai/gha-toolbox/yq@main
+      env:
+        SWITCH_ON: ${{ inputs.switch-on }}
+      with:
+        input: ${{ inputs.payloads }}
+        script: .[strenv(SWITCH_ON)]
+    - if: ${{ runner.debug }}
+      shell: bash
+      env:
+        SELECTION: ${{ inputs.selection.outputs.result }}
+        SELECTION_KEY: ${{ inputs.switch-on }}
+      run: |
+        echo "KEY: ${SELECTION_KEY}"
+        echo "${SELECTION}"
+    - if: ${{ steps.selection.outputs.result != 'null' }}
+      uses: slackapi/slack-github-action@v2.1.1
+      with:
+        webhook: https://hooks.slack.com/services/${{ inputs.webhook }}
+        webhook-type: incoming-webhook
+        payload: ${{ steps.selection.outputs.result }}
