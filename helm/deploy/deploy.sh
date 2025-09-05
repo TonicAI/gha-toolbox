@@ -53,12 +53,17 @@ fi
 
 add_helm_args -n "${NAMESPACE}" --create-namespace
 
+# this could be the first time the chart is being installed in the namespace
+# so we'll silence errors coming from this. If it is a authentication or
+# permissions issues we'll strike it again when we attempt to apply the chart
 set +e
-STATUS=$(helm status -n "${NAMESPACE}" "${NAME}" -o json 2>/dev/null | jq -r '.info.status')
+HELM_STATUS=$(helm get metadata -n "${NAMESPACE}" "${NAME}" -o json 2>/dev/null)
 set -e
+DEPLOYED_AT_START=$(echo "${HELM_STATUS}" | jq -r '.revision')
+DEPLOYED_STATUS=$(echo "${HELM_STATUS}" | jq -r '.info.status')
 
 if [[ "${REMOVE_FAILED,,}"  == "true" ]]; then
-  case "${STATUS}" in
+  case "${DEPLOYED_STATUS}" in
     pending-upgrade )
       helm rollback -n "${NAMESPACE}" "${NAME}" --wait
       ;;
@@ -68,7 +73,7 @@ if [[ "${REMOVE_FAILED,,}"  == "true" ]]; then
   esac
 fi
 
-if [ -n "${STATUS}" ]; then
+if [ -n "${DEPLOYED_STATUS}" ]; then
   ACTION="upgrade"
 fi
 
@@ -88,7 +93,17 @@ if [ -f "full-manifest.yaml" ]; then
   echo "full-manifest=$(readlink -e full-manifest.yaml)" | tee -a "${GITHUB_OUTPUT}"
 fi
 
+if [ "${DRY_RUN,,}" == "true" ]; then
+  exit 0
+fi
+
 LATEST=$(helm get metadata -n "${NAMESPACE}" "${NAME}" -ojson)
+LATEST_REVISION=$(echo "${LATEST}" | jq -r '.revision')
+
+if [ "${LATEST_REVISION}" == "${DEPLOYED_AT_START}" ]; then
+  echo "::error::Could not create new helm release"
+  exit 3
+fi
 
 function latest-output() {
   local OUTPUT="${1}"
@@ -100,7 +115,7 @@ function latest-output() {
 }
 
 {
-  latest-output 'json' '.'
+  echo "::group::outputs"
   latest-output 'app-version' '.appVersion'
   latest-output 'chart-name' '.chart'
   latest-output 'chart-version' '.version'
@@ -109,6 +124,8 @@ function latest-output() {
   latest-output 'namespace' '.namespace'
   latest-output 'revision' '.revision'
   latest-output 'status' '.status'
+  latest-output 'json' '.'
+  echo "::endgroup::"
 } | tee -a "${GITHUB_OUTPUT}"
 
 exit $EC
