@@ -114,8 +114,8 @@ function latest-output() {
   echo "${EOF}"
 }
 
+echo "::group::outputs"
 {
-  echo "::group::outputs"
   latest-output 'app-version' '.appVersion'
   latest-output 'chart-name' '.chart'
   latest-output 'chart-version' '.version'
@@ -125,7 +125,7 @@ function latest-output() {
   latest-output 'revision' '.revision'
   latest-output 'status' '.status'
   latest-output 'json' '.'
-  echo "::endgroup::"
 } | tee -a "${GITHUB_OUTPUT}"
+echo "::endgroup::"
 
 exit $EC
