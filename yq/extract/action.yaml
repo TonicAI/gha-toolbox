@@ -49,6 +49,7 @@ runs:
         CI_DEBUG: ${{ inputs.debug }}
       run: |
         #@begin=bash@
+        [ -n "${CI_DEBUG}" ] && set -x
         while ifs= read -r line || [[ -n $line ]]; do
           if [ -z "${line}" ] || [[ $line =~ $COMMENT_PATTERN ]]; then
             continue
