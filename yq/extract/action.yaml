@@ -1,0 +1,59 @@
+name: YQ Extract
+description: Extracts one or more values from YAML input
+inputs:
+  input:
+    required: true
+    description: |
+      Content or filepath, begin with file:// for filepath
+  input-format:
+    default: "yaml"
+    description: Format of input, default is "yaml"
+  selectors:
+    required: true
+    description: |
+      New line separated GHA Output Names =  YQ selectors pais
+        version=.version
+        domain=.ingress.host
+runs:
+  using: "composite"
+  steps:
+    - id: prepare
+      shell: bash
+      env:
+        INPUT: ${{ inputs.input }}
+        TMPDIR: ${{ runner.temp }}
+      run: |
+        #@begin=bash@
+        if [[ $INPUT == file://* ]]; then
+          echo "input-filepath=${INPUT#file://}" | tee -a "${GITHUB_OUTPUT}"
+        fi
+        #@end=bash@
+    - id: input
+      if: ${{ steps.prepare.outputs.input-filepath == '' }}
+      uses: tonicai/gha-toolbox/files/generate@main
+      with:
+        filepath: ${{ steps.prepare.outputs.dir }}/input
+        content: ${{ inputs.input }}
+    - id: yq
+      shell: bash
+      env:
+        COMMENT_PATTERN: "^ *#"
+        INPUT: ${{ steps.input.outputs.filepath || steps.prepare.outputs.input-filepath }}
+        INPUT_FORMAT: ${{ inputs.input-format }}
+        SELECTORS: ${{ inputs.selectors }}
+      run: |
+        #@begin=bash@
+        while ifs= read -r line || [[ -n $line ]]; do
+          if [ -z "${line}" ] || [[ $line =~ $COMMENT_PATTERN ]]; then
+            continue
+          fi
+          gha_output=$(echo "${line}" | cut -f1 -d '=' | xargs)
+          selector=$(echo "${line}" | cut -f2 -d '=' | xargs)
+          eof=$(uuidgen)
+          {
+            echo "${gha_output}<<${eof}"
+            yq --input-format "${INPUT_FORMAT}" "${selector}" "${INPUT}"
+            echo "${eof}"
+          } | tee -a "${GITHUB_OUTPUT}"
+        done < <(printf '%s' "${SELECTORS}")
+        #@end=bash@
