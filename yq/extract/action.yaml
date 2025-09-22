@@ -27,6 +27,8 @@ runs:
         if [[ $INPUT == file://* ]]; then
           echo "input-filepath=${INPUT#file://}" | tee -a "${GITHUB_OUTPUT}"
         fi
+        DIR=$(mktemp -d -p $TMPDIR "yq.XXXXXX")
+        echo "dir=$(realpath $DIR)" >> $GITHUB_OUTPUT
         #@end=bash@
     - id: input
       if: ${{ steps.prepare.outputs.input-filepath == '' }}
