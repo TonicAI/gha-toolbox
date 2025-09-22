@@ -55,14 +55,19 @@ runs:
           fi
           gha_output=$(echo "${line}" | cut -f1 -d '=' | xargs)
           selector=$(echo "${line}" | cut -f2 -d '=' | xargs)
+          selected=$(yq e -Mr --output-format="${INPUT_FORMAT}" --input-format="${INPUT_FORMAT}" "${selector}" "${INPUT}")
           eof=$(uuidgen)
           if [ -n "${CI_DEBUG}" ]; then
             echo "Ouput Name: ${gha_output}"
             echo "Selector: ${selector}"
           fi
+          if [ -z "${selected}" ]; then
+            echo "${selector} did not match"
+            exit 2
+          fi
           {
             echo "${gha_output}<<${eof}"
-            yq e -Mr --output-format="${INPUT_FORMAT}" --input-format="${INPUT_FORMAT}" "${selector}" "${INPUT}" || exit 2
+            echo "${selected}"
             echo "${eof}"
           } | tee -a "${GITHUB_OUTPUT}"
         done < <(printf '%s' "${SELECTORS}")
