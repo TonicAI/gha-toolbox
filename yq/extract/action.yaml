@@ -54,7 +54,7 @@ runs:
           eof=$(uuidgen)
           {
             echo "${gha_output}<<${eof}"
-            yq --input-format "${INPUT_FORMAT}" "${selector}" "${INPUT}"
+            yq e -Mr --output-format="${INPUT_FORMAT}" --input-format="${INPUT_FORMAT}" "${selector}" "${INPUT}" || exit 2
             echo "${eof}"
           } | tee -a "${GITHUB_OUTPUT}"
         done < <(printf '%s' "${SELECTORS}")
