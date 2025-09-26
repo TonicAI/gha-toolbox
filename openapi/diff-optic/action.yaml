@@ -1,0 +1,21 @@
+name: Compare OpenAPI specs
+inputs:
+  openapi-uri-original:
+    description: URI (file or URL) to the original OpenAPI spec ("before")
+    required: true
+  openapi-uri-updated:
+    description: URI (file or URL) to the updated OpenAPI spec ("after")
+    required: true
+  optic-yaml-path:
+    description: (Optional) Path to an Optic YAML file, for customizing the Optic diff ruleset
+    required: false
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: ${{ github.action_path }}/run.sh
+      env: 
+        OPENAPI_URI_ORIGINAL: ${{ inputs.openapi-uri-original }}
+        OPENAPI_URI_UPDATED: ${{ inputs.openapi-uri-updated }}
+        OPTIC_YAML_PATH: ${{ inputs.optic-yaml-path }}
