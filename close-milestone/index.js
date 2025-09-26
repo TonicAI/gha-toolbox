@@ -3,7 +3,7 @@ const github = require("@actions/github");
 
 async function run() {
     const token = core.getInput("repo-token", { required: true });
-    core.debug("Github Payload: " + JSON.Stringify(github));
+    core.debug("Github Payload: " + JSON.stringify(github));
     const releaseNumber = Number(
         github.context.ref.substr(11, github.context.ref.length - 1)
     );
