@@ -4,9 +4,8 @@ const github = require("@actions/github");
 async function run() {
     const token = core.getInput("repo-token", { required: true });
     core.debug("Github Payload: " + JSON.stringify(github));
-    const releaseNumber = Number(
-        github.context.ref.substr(11, github.context.ref.length - 1)
-    );
+    const releaseNumberText = github.context.ref ? github.context.ref.substr(11, github.context.ref.length - 1) : github.release.name.substr(1, github.release.name - 1);
+    const releaseNumber = Number(releaseNumberText);
     if (isNaN(releaseNumber)) return;
     const release = releaseNumber.toString().padStart(3, "0");
     const client = new github.getOctokit(token);
