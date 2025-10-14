@@ -29,7 +29,6 @@ runs:
       run: |
         #@begin=bash@
         if [ -n "${HELM_CHART_NAME_OVERRIDE}" ]; then
-          export HELM_CHART_NAME_OVERRIDE=$(tr
           yq -i ".name = strenv(HELM_CHART_NAME_OVERRIDE)" Chart.yaml
         fi
         HELM_CHART_NAME=$(yq '.name' Chart.yaml)
