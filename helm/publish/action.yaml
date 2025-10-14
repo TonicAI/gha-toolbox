@@ -29,10 +29,12 @@ runs:
       run: |
         #@begin=bash@
         if [ -n "${HELM_CHART_NAME_OVERRIDE}" ]; then
+          export HELM_CHART_NAME_OVERRIDE=$(tr
           yq -i ".name = strenv(HELM_CHART_NAME_OVERRIDE)" Chart.yaml
         fi
         HELM_CHART_NAME=$(yq '.name' Chart.yaml)
         yq -i '.appVersion = strenv(HELM_CHART_APP_VERSION)' Chart.yaml
+        HELM_CHART_VERSION=$(echo "${HELM_CHART_VERSION}" | tr "_" "-")
         helm package --version "${HELM_CHART_VERSION}" .
         ARCHIVE=$(readlink -e "${HELM_CHART_NAME}-${HELM_CHART_VERSION}.tgz")
         helm push "${ARCHIVE}" "${HELM_CHART_REPOSITORY}"
