@@ -1,0 +1,40 @@
+name: Helm Publish
+description: Packs and publishes a helm chart to the specified repository
+inputs:
+  chart-name-override:
+    description: Override the chart name
+  chart-path:
+    required: true
+    description: Path to chart
+  app-version:
+    required: true
+    description: App version to set on chart
+  chart-version:
+    required: true
+    description: Chart version to set on chart
+  repository:
+    required: true
+    description: Repository to push packaged chart
+runs:
+  using: composite
+  steps:
+    - id: pack-and-push
+      shell: bash
+      env:
+        HELM_CHART_APP_VERSION: ${{ inputs.app-version }}
+        HELM_CHART_VERSION: ${{ inputs.chart-version }}
+        HELM_CHART_REPOSITORY: ${{ inputs.repository }}
+        HELM_CHART_NAME_OVERRIDE: ${{ inputs.chart-name-override }}
+      working-directory: ${{ inputs.chart-path }}
+      run: |
+        #@begin=bash@
+        if [ -n "${HELM_CHART_NAME_OVERRIDE}" ]; then
+          yq -i ".name = strenv(HELM_CHART_NAME_OVERRIDE)" Chart.yaml
+        fi
+        HELM_CHART_NAME=$(yq '.name' Chart.yaml)
+        yq -i '.appVersion = strenv(HELM_CHART_APP_VERSION)' Chart.yaml
+        HELM_CHART_VERSION=$(echo "${HELM_CHART_VERSION}" | tr "_" "-")
+        helm package --version "${HELM_CHART_VERSION}" .
+        ARCHIVE=$(readlink -e "${HELM_CHART_NAME}-${HELM_CHART_VERSION}.tgz")
+        helm push "${ARCHIVE}" "${HELM_CHART_REPOSITORY}"
+        #@end=bash@

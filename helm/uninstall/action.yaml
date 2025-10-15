@@ -1,0 +1,51 @@
+name: helm uninstall
+description: Uninstalls one or more helm charts in a namespace
+inputs:
+  namespace:
+    required: true
+    description: kubernetes namespace to uninstall charts from
+  charts:
+    required: false
+    description: New line separated list of charts to uninstall
+  all-charts:
+    required: false
+    description: Set to `true` to remove all charts in the namespace
+  wait:
+    required: false
+    description: Set to `true` to wait on each uninstall
+runs:
+  using: composite
+  steps:
+    - id: uninstall
+      shell: bash
+      env:
+        CHARTS_TO_UNINSTALL: ${{ inputs.charts }}
+        UNINSTALL_ALL_CHARTS: ${{ inputs.all-charts }}
+        K8S_NAMESPACE: ${{ inputs.namespace }}
+        HELM_UNINSTALL_WAIT: ${{ inputs.wait }}
+      run: |
+        #@begin=bash@
+        if [ "true" = "${UNINSTALL_ALL_CHARTS,,}" ]; then
+          CHARTS_TO_UNINSTALL=$(helm -n "${K8S_NAMESPACE}" list --all -ojson | jq -rM '.[] | .name')
+        fi
+
+        if [ -z "${CHARTS_TO_UNINSTALL}" ]; then
+          echo "::error::Must provide at least one chart"
+          exit 2
+        fi
+
+        HELM_UNINSTALL_ARGS=("-n" "${K8S_NAMESPACE}")
+        if [ "true" = "${HELM_UNINSTALL_WAIT}" ]; then
+          HELM_UNINSTALL_ARGS+=("--wait" "--timeout" "5m0s")
+        fi
+
+        COMMENT_PATTERN="^ *#"
+        if [ -n "${CHARTS_TO_UNINSTALL}" ]; then
+          while IFS= read -r line || [[ -n $line ]]; do
+            if [ -z "${line}" ] || [[ $line =~ $COMMENT_PATTERN ]]; then
+              continue
+            fi
+            helm uninstall "${HELM_UNINSTALL_ARGS[@]}" "${line}"
+          done < <(printf '%s' "${CHARTS_TO_UNINSTALL}")
+        fi
+        #@end=bash@
