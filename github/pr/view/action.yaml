@@ -69,13 +69,19 @@ runs:
         DEBUG: ${{ runner.debug }}
       run: |
         #@begin=bash@
+        function fatal() {
+            EC=${1}
+            shift
+            echo "::error:: ${*}" >&2
+            exit "${EC}"
+        }
         FIELDS="number,state,labels,body,isDraft,changedFiles,id,headRefName,url"
         # gh pr view --json doesn't like trailing ,
         if [ ! -z "${INCLUDE_FIELDS}" ]; then
             FIELDS="${FIELDS},${INCLUDE_FIELDS}"
         fi
         echo "Requesting ${FIELDS}"
-        JSON=$(gh -R "${REPOSITORY}" pr view "${PR_REF}" --json "${FIELDS}")
+        JSON=$(gh -R "${REPOSITORY}" pr view "${PR_REF}" --json "${FIELDS}") || fatal 1 "Could not retrieve pull request"
 
         function field() {
           local SRC="${1}"
