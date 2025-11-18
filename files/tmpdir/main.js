@@ -9,5 +9,6 @@ if (process.env.STATE_tmpdir !== undefined) {
   fs.mkdirSync(tmpdirBase, {recursive: true});
   let tmpdir = fs.mkdtempSync(tmpdirBase);
   fs.appendFileSync(process.env.GITHUB_STATE, `tmpdir=${tmpdir}${EOL}`);
+  fs.appendFileSync(process.env.GITHUB_OUTPUT, `path=${tmpdir}${EOL}`);
   fs.appendFileSync(process.env.GITHUB_OUTPUT, `tmpdir=${tmpdir}${EOL}`);
 }
