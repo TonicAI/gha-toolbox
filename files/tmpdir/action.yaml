@@ -10,6 +10,8 @@ inputs:
 outputs:
   path:
     description: Path to the created directory
+  tmpdir:
+    description: Legacy output name
 runs:
   using: node20
   main: main.js
