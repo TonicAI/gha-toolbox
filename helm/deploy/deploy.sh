@@ -32,6 +32,8 @@ fi
 
 if [ -f "kustomization.yaml" ]; then
   add_helm_args --post-renderer "${ACTION_PATH}/kustomize.sh"
+else
+  add_helm_args --post-renderer "${ACTION_PATH}/artifact.sh"
 fi
 
 if [ -n "${HELM_TIMEOUT}" ]; then
@@ -85,9 +87,7 @@ helm upgrade --install "${NAME}" "${CHART}" ${HELM_ARGS}
 EC=$?
 set -e
 
-if [ "${DEBUG,,}" != "true" ]; then
-  set +x
-fi
+[ "${DEBUG,,}" != "true" ] && set +x
 
 if [ -f "full-manifest.yaml" ]; then
   echo "full-manifest=$(readlink -e full-manifest.yaml)" | tee -a "${GITHUB_OUTPUT}"
