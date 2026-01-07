@@ -89,7 +89,7 @@ if [ "${DEBUG,,}" != "true" ]; then
   set +x
 fi
 
-if [ -f "kustomize.err" ]; then
+if [ -s "kustomize.err" ]; then
   echo "::error::Kustomize failed"
   cat kustomize.err
   exit 99
