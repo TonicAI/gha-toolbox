@@ -89,6 +89,12 @@ set -e
 
 [ "${DEBUG,,}" != "true" ] && set +x
 
+if [ -s "kustomize.err" ]; then
+  echo "::error::Kustomize failed"
+  cat kustomize.err
+  exit 99
+fi
+
 if [ -f "full-manifest.yaml" ]; then
   echo "full-manifest=$(readlink -e full-manifest.yaml)" | tee -a "${GITHUB_OUTPUT}"
 fi
