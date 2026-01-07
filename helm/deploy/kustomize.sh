@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
+set -o pipefail
 cat > resources.yaml
-kubectl kustomize | tee full-manifest.yaml
-rm resources.yaml
+kubectl kustomize 2>kustomize.err | tee full-manifest.yaml
