@@ -1,13 +1,19 @@
-name: 'Get Stale Pull Requests'
-description: 'Finds the open pull requests with no activity in the last 7 days'
+name: "Get Stale Pull Requests"
+description: "Finds the open pull requests with no activity in the last 7 days"
 inputs:
-    repo-token:
-        required: true
-        description: 'The GITHUB_TOKEN secret'
+  repo-token:
+    required: true
+    description: "The GITHUB_TOKEN secret"
+  days-to-stale:
+    required: false
+    default: "7"
+    description: "Number of days since last commit to be considered stale"
 outputs:
-    stale_pr_numbers:
-        description: 'The space delimited list of ids from stale pull requests'
+  stale_pr_numbers:
+    description: "The space delimited list of ids from stale pull requests"
+  stale-prs-json:
+    description: "JSON formatted list of stale PRs"
 
 runs:
-    using: 'node20'
-    main: 'index.js'
+  using: "node20"
+  main: "index.js"

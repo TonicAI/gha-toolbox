@@ -3,6 +3,12 @@ const github = require("@actions/github");
 
 async function run() {
     const token = core.getInput("repo-token", { required: true });
+    const daysToStale = parseInt(core.getInput("days-to-stale", { required: true }), 10)
+    if (daysToStale < 1) {
+      throw new Error("days-to-stale must be at least 1");
+    } else if (isNaN(daysToStale)) {
+      throw new Error("days-to-stale must be a number");
+    }
 
     prsToClose = [];
 
@@ -30,13 +36,14 @@ async function run() {
         );
         const lastCommit = commits[commits.length - 1];
         const commitDate = new Date(lastCommit.commit.committer.date);
-        if ((new Date() - commitDate) / 86400000 >= 7) {
+        if ((new Date() - commitDate) / 86400000 >= daysToStale) {
             prsToClose.push(prNum);
         }
     }
 
     console.log(`Stale PRs: ${prsToClose}`);
     core.setOutput("stale_pr_numbers", prsToClose.join(" "));
+    core.setOutput("stale-prs-json", JSON.stringify(prsToClose))
 }
 
 run().catch((error) => {
