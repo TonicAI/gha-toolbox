@@ -6,7 +6,7 @@ async function run() {
     const daysToStale = parseInt(core.getInput("days-to-stale", { required: true }), 10)
     if (daysToStale < 1) {
       throw new Error("days-to-stale must be at least 1");
-    } else if (isNan(daysToStale)) {
+    } else if (isNaN(daysToStale)) {
       throw new Error("days-to-stale must be a number");
     }
 
