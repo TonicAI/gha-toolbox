@@ -27,7 +27,7 @@ if [ -n "${DEBUG}" ]; then
 fi
 
 if [[ "${DRY_RUN,,}" == "true" ]]; then
-  add_helm_args --dry-run
+  add_helm_args --dry-run --debug
 fi
 
 if [ -f "kustomization.yaml" ]; then
