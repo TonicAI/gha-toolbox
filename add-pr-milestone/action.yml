@@ -8,5 +8,5 @@ outputs:
   milestone:
     description: 'The Milestone added to the PR'
 runs:
-  using: 'node20'
+  using: 'node24'
   main: 'index.js'
