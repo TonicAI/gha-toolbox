@@ -62,7 +62,7 @@ set +e
 HELM_STATUS=$(helm get metadata -n "${NAMESPACE}" "${NAME}" -o json 2>/dev/null)
 set -e
 DEPLOYED_AT_START=$(echo "${HELM_STATUS}" | jq -r '.revision')
-DEPLOYED_STATUS=$(echo "${HELM_STATUS}" | jq -r '.info.status')
+DEPLOYED_STATUS=$(echo "${HELM_STATUS}" | jq -r '.status')
 
 if [[ "${REMOVE_FAILED,,}"  == "true" ]]; then
   case "${DEPLOYED_STATUS}" in
