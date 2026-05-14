@@ -8,11 +8,11 @@ Example usage:
 ```yaml
 jobs:
   plan:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     name: Plan
     steps:
       - id: checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 1
       - name: Plan

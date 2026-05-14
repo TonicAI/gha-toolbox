@@ -64,7 +64,7 @@ on:
 jobs:
   pr:
     name: Get Pull Request Info
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     outputs:
       number: ${{ steps.pr.outputs.number }}
       branch-name: ${{ steps.pr.outputs.branch-name }}

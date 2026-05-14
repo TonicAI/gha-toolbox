@@ -31,7 +31,7 @@ runs:
         echo "KEY: ${SELECTION_KEY}"
         echo "${SELECTION}"
     - if: ${{ steps.selection.outputs.result != 'null' }}
-      uses: slackapi/slack-github-action@v2.1.1
+      uses: slackapi/slack-github-action@v3.0.3
       with:
         webhook: https://hooks.slack.com/services/${{ inputs.webhook }}
         webhook-type: incoming-webhook

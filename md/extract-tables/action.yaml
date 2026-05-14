@@ -27,5 +27,5 @@ outputs:
       Absolute filepath to json file with extracted tables when output is not "-"
 
 runs:
-  using: node20
+  using: node24
   main: main.js

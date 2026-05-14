@@ -27,6 +27,6 @@ outputs:
   filepath:
     description: Absolute path to the generated file
 runs:
-  using: "node20"
+  using: "node24"
   main: main.js
   post: main.js
