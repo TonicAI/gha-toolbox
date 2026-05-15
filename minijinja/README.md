@@ -44,7 +44,7 @@ Renders a minijinja template, either to file or to `$GITHUB_OUTPUT`.
       safe/include/path/2
 ---
 # using outputs
-- uses: slackapi/slack-github-action@v1.26.0
+- uses: slackapi/slack-github-action@v3
   with:
     # when output: -
     payload: ${{ steps.rendered.outputs.rendered }}

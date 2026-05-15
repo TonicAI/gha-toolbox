@@ -17,6 +17,6 @@ inputs:
     default: 192.168.0.2
 
 runs:
-  using: "node20"
+  using: "node24"
   main: index.js
   post: index.js

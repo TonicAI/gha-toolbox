@@ -71,7 +71,7 @@ runs:
         #@end=bash@
     - name: Artifact plan
       id: plan
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: ${{ inputs.plan-name }}.tfplan
         path: ${{ inputs.working-directory }}/${{ inputs.plan-name }}.tfplan
@@ -83,7 +83,7 @@ runs:
       run: tar -czvf workdir.tar.gz "${WORKDIR}" "${ADDITIONAL[@]}"
     - name: Artifact workdir
       id: terraform
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: ${{ inputs.plan-name }}.tfworkdir
         path: workdir.tar.gz

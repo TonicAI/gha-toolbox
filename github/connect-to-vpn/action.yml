@@ -9,6 +9,6 @@ inputs:
         description: 'The contents of the dev.pem ssh key'
 
 runs:
-    using: 'node20'
+    using: 'node24'
     main: 'connect.js'
     post: 'disconnect.js'

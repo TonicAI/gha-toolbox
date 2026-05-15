@@ -12,5 +12,5 @@ inputs:
       description: 'The comment you wish to add to the pull requests'
 
 runs:
-  using: 'node20'
+  using: 'node24'
   main: 'index.js'

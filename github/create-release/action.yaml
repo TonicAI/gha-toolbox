@@ -33,7 +33,7 @@ runs:
   using: "composite"
   steps:
     - id: create
-      uses: actions/github-script@v6
+      uses: actions/github-script@v9
       env:
         RELEASE_TAG: ${{ inputs.release-tag }}
         PREVIOUS_TAG: ${{ inputs.previous-tag }}

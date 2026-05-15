@@ -17,5 +17,5 @@ outputs:
     pr_description:
         description: 'The body of the Pull Request.'
 runs:
-  using: 'node20'
+  using: 'node24'
   main: 'index.js'

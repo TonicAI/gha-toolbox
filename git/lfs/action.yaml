@@ -30,7 +30,7 @@ runs:
       shell: bash
       run: |
         git lfs ls-files -l | cut -d' ' -f1 | sort > .lfs-assets-id
-    - uses: actions/cache@v4
+    - uses: actions/cache@v5
       id: lfs-cache
       if: inputs.use-cache == 'true'
       with:
