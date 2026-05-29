@@ -39,6 +39,8 @@ inputs:
   manifest-artifact-name:
     description: The name of the artifact for the full manifest
     default: full-manifest.yaml
+  diagnostic-artifact:
+    description: Set to collect diagnostics about the chart into an artifact
 outputs:
   action:
     value: ${{ steps.deploy.outputs.action }}
@@ -99,9 +101,33 @@ runs:
         ACTION_PATH: ${{ github.action_path }}
         DRY_RUN: ${{ inputs.dry-run }}
         DEBUG: ${{ inputs.debug }}
-      run: ${{ github.action_path }}/deploy.sh
+        SCRIPT_DIR: ${{ github.action_path }}
+      run: |
+        ${SCRIPT_DIR}/deploy.sh
     - uses: actions/upload-artifact@v7
       if: always() && inputs.artifact-manifest == 'true' && steps.deploy.outputs.full-manifest != ''
       with:
         name: ${{ inputs.manifest-artifact-name }}
         path: ${{ steps.deploy.outputs.full-manifest }}
+        overwrite: true
+    - id: diagnostic-dir
+      uses: tonicai/gha-toolbox/files/tmpdir@main
+      if: failure() && inputs.diagnostic-artifact != '' && steps.deploy.outputs.status != ''
+      with:
+        name: ${{ inputs.diagnostic-artifact }}
+    - id: diagnostics
+      if: always() && steps.diagnostic-dir.outputs.path != ''
+      shell: bash
+      env:
+        DIAGDIR: ${{ steps.diagnostic-dir.outputs.path }}
+        RELEASE_NAME: ${{ steps.deploy.outputs.install-name }}
+        NAMESPACE: ${{ steps.deploy.outputs.namespace }}
+        SCRIPT_DIR: ${{ github.action_path }}
+      run: |
+        ${SCRIPT_DIR}/collect-diagnostics.sh
+    - uses: actions/upload-artifact@v7
+      if: always() && steps.diagnostic-dir.outputs.path != ''
+      with:
+        name: ${{ inputs.diagnostic-artifact }}
+        path: ${{ steps.diagnostic-dir.outputs.path }}/*
+        overwrite: true
