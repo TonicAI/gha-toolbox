@@ -70,7 +70,7 @@ if [[ "${REMOVE_FAILED,,}"  == "true" ]]; then
       helm rollback -n "${NAMESPACE}" "${NAME}" --wait
       ;;
     pending-install )
-      helm uninstall -n "${NAMESPACE}" "${NAME}"
+      helm uninstall -n "${NAMESPACE}" "${NAME}" --wait
       ;;
   esac
 fi
