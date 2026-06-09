@@ -43,7 +43,13 @@ runs:
         SCRIPT: ${{ inputs.script }}
         TMPDIR: ${{ runner.temp }}
       run: |
+
         #@begin=bash@
+        if ! command -v yq; then
+          echo "Installing yq"
+          go install github.com/mikefarah/yq/v4@latest
+        fi
+
         if [[ $INPUT == file://* ]]; then
           echo "input-filepath=${INPUT#file://}" >> $GITHUB_OUTPUT
         fi
@@ -77,6 +83,7 @@ runs:
         SCRIPT: ${{ steps.script.outputs.filepath || steps.prepare.outputs.script-filepath }}
         INDENT: ${{ inputs.indent }}
       run: |
+
         #@begin=bash@
         ARGS="--from-file ${SCRIPT} --output-format ${OUTPUT_FORMAT} -I${INDENT}"
 
