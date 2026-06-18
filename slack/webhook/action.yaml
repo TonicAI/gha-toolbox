@@ -1,0 +1,27 @@
+name: Send Slack Webhook Message
+description: Sends a message to a slack webhook.
+inputs:
+  webhook:
+    required: true
+    description: Webhook to send message to
+  webhook-type:
+    default: "incoming-webhook"
+    description: 'Type of slack webhook (default: "incoming webhook")'
+  message:
+    required: true
+    description: Message to send to webhook
+runs:
+  using: composite
+  steps:
+    - id: compose
+      uses: tonicai/gha-toolbox/yq@main
+      env:
+        MESSAGE: ${{ inputs.message }}
+      with:
+        input: '{}'
+        script: '.text = strenv(MESSAGE)'
+    - uses: slackapi/slack-github-action@v3
+      with:
+        payload: ${{ steps.compose.outputs.result }}
+        webhook: https://hooks.slack.com/services/${{ inputs.webhook }}
+        webhook-type: ${{ inputs.webhook-type }}
