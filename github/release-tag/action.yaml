@@ -33,13 +33,13 @@ runs:
         GH_TOKEN: ${{ inputs.github-token }}
       run: |
         #@begin=bash@
-        CURRENT_VERSION=$(gh api \
+        CURRENT_VERSION=$(gh api --paginate \
           -H "Accept: application/vnd.github+json" \
           -H "X-GitHub-Api-Version: 2022-11-28" \
           "/repos/${OWNER}/${REPO}/git/matching-refs/tags" | \
         jq -r '.[] | select(.object.type == "commit" and (.ref | test("^refs/tags/v[0-9]+$"))) | .ref' | \
-        tail -n1 | \
-        sed 's|refs/tags/||g')
+        sed 's|refs/tags/||g' | \
+        sort -V | tail -n1)
         echo "current=${CURRENT_VERSION}" >> $GITHUB_OUTPUT
         #@end=bash@
     - id: next
